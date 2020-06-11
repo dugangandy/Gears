@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>接口测试大盘</title>
+
+    <link rel="shortcut icon" href="favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=78e7f91c0c" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css?v=269550530c?v=4.4.0" rel="stylesheet">
+
+    <!-- Morris -->
+    <link href="css/plugins/morris/morris-0.4.3.min.css" rel="stylesheet">
+
+    <link href="/static/css/animate.min.css?v=393d1040f9" rel="stylesheet">
+    <link href="/static/css/style.min.css?v=735f6dc0b3" rel="stylesheet">
+
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content">
+    <div class="row">
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-primary pull-right">昨天</span>
+                    <h5>接入应用数</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins">{{ staticsData.alias_sum }}</h1>
+                    <div class="stat-percent font-bold text-navy">+{{ staticsData.alias_add_count }}
+                        {% if staticsData.alias_add_count > 0 %}
+                        <i class="fa fa-level-up"></i>
+                        {% endif %}
+                    </div>
+                    <small>新接入应用</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-primary pull-right">昨天</span>
+                    <h5>接口数</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins">{{ staticsData.api_sum }}</h1>
+                    <div class="stat-percent font-bold text-navy">+{{ staticsData.api_add_count }}
+                        {% if staticsData.api_add_count > 0 %}
+                        <i class="fa fa-level-up"></i>
+                        {% endif %}
+                    </div>
+                    <small>新增接口</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-primary pull-right">昨天</span>
+                    <h5>测试用例数</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins">{{ staticsData.testcase_sum }}</h1>
+                    <div class="stat-percent font-bold text-navy">+{{ staticsData.testcase_add_count }}
+                        {% if staticsData.testcase_add_count > 0 %}
+                        <i class="fa fa-level-up"></i>
+                        {% endif %}
+                    </div>
+                    <small>新增用例</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-3">
+            <div class="ibox float-e-margins">
+                <div class="ibox-title">
+                    <span class="label label-primary pull-right">昨天</span>
+                    <h5>测试执行次数</h5>
+                </div>
+                <div class="ibox-content">
+                    <h1 class="no-margins">{{ staticsData.execution_sum }}</h1>
+                    <div class="stat-percent font-bold text-navy">+{{ staticsData.execution_add_count }}
+                        {% if staticsData.execution_add_count > 0 %}
+                        <i class="fa fa-level-up"></i>
+                        {% endif %}
+                    </div>
+                    <small>新增执行</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script src="/static/js/jquery.min.js?v=f9c7afd057?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=281cd50dd9?v=3.3.6"></script>
+<script src="/static/js/content.min.js?v=6dc569e24f?v=1.0.0"></script>
+<script src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+<script>
+    $(document).ready(function () {
+    });
+</script>
+</body>
+</html>

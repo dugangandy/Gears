@@ -1,0 +1,359 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>测试计划</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=78e7f91c0c?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/plugins/bootstrap-table/bootstrap-table.min.css?v=8a861bfab9" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css?v=269550530c" rel="stylesheet">
+
+    <link href="/static/css/animate.min.css?v=393d1040f9" rel="stylesheet">
+    <link href="/static/css/style.css?v=45c8f40c86" rel="stylesheet"> <!-- style.min.css有问题：对话框无法在顶端显示 -->
+
+    <link href="/static/js/plugins/scrollUp/css/themes/image.css?v=a70fca85fd" rel="stylesheet">
+    <link rel="stylesheet" href="/static/module/jquery-ui-1.12.1/jquery-ui.min.css?v=0b5729a931">
+    <script type="text/javascript" src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row animated fadeInRight">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="col-sm-12" style="padding-left: 0px">
+                        <input type="hidden" id="projects" value="{{ systemAlias }}"/>
+{#                        <label>#}
+{#                            <select id="projects" class="form-control m-b" value="{{ systemAlias }}"#}
+{#                                    onchange="reloadDatagrid();" style="width:280px;">#}
+{#                                <option selected value=''>所有应用</option>#}
+{#                            </select>#}
+{#                        </label>#}
+                        <label>
+                            <select id="status" class="form-control m-b" value="{{ status }}"
+                                    onchange="reloadDatagrid();" style="width:120px;">
+                                <option value=''>全部计划</option>
+                                <option value=0>未执行</option>
+                                <option value=1>正在执行</option>
+                                <option value=2>执行完成</option>
+                            </select>
+                        </label>
+                        <label>
+                            <a href="javascript:window.location.reload();" style="margin-left:10px" id="btn_query"
+                                    class="btn btn-info"><i class="fa fa-refresh"></i></a>
+                        </label>
+                        <label>
+                            <button onclick="reloadDatagrid();" style="margin-left:10px" id="btn_query"
+                                    class="btn btn-info"><i class="fa fa-search"></i> 查询
+                            </button>
+                        </label>
+                        <label>
+                            <button onclick="createTestplan();" style="margin-left:10px" id="btn_create"
+                                    class="btn btn-primary">创建测试计划
+                            </button>
+                        </label>
+{#                        <label>#}
+{#                            <a href='/testcase/testExecutionPage/' style="margin-left:10px" id="btn_query"#}
+{#                                    class="btn btn-warning">执行测试计划#}
+{#                            </a>#}
+{#                        </label>#}
+                    </div>
+
+                    <table id="testcase_table" style="word-break:break-all;">
+                        <thead>
+                        <tr>
+                            <th data-field="id" data-width="5%" data-align="center">ID</th>
+                            <th data-field="name" data-width="25%">测试计划名称</th>
+                            <th data-field="env" data-width="8%" data-align="center">运行环境</th>
+                            <th data-field="count" data-width="5%" data-align="center">用例数</th>
+                            <th data-field="success_rate" data-width="8%" data-align="right" data-formatter="formatSuccRate">通过率</th>
+                            <th data-field="status_text" data-width="10%" data-align="center">状态</th>
+                            <th data-field="creator" data-width="8%" data-align="center">创建人</th>
+                            <th data-field="create_time" data-width="15%" data-align="center">创建时间</th>
+                            <th data-field="action" data-width="17%" data-align="left" data-formatter="showAction">
+                                操作
+                            </th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade in" id="detailDlg" tabindex="1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated fadeIn">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">测试计划详情</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editFrom" method="get" action="">
+                    <input type="hidden" id="id"/>
+                    <table class="table table-bordered table-condensed">
+                        <tr>
+                            <th>测试计划名称：</th>
+                            <td>
+                                <input type="text" id="testplan_name" class="form-control" placeholder="">
+                            </td>
+                            <th>状态：</th>
+                            <td>
+                                <input type="text" id="testplan_status" class="form-control" placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>计划开始时间：</th>
+                            <td>
+                                <input type="text" id="start_time_str" class="form-control" placeholder="">
+                            </td>
+                            <th>运行环境：</th>
+                            <td>
+                                <input type="text" id="env" class="form-control" placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>实际开始时间：</th>
+                            <td>
+                                <input type="text" id="actual_start_time" class="form-control" placeholder="未开始">
+                            </td>
+                            <th>实际结束时间：</th>
+                            <td>
+                                <input type="text" id="actual_end_time" class="form-control" placeholder="未结束">
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/jquery.min.js?v=f9c7afd057"></script>
+<script src="/static/js/bootstrap.min.js?v=281cd50dd9"></script>
+<script src="/static/js/plugins/bootstrap-table/bootstrap-table.min.js?v=eeb5b97857"></script>
+<script src="/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js?v=c8f1530c22"></script>
+
+<script src="/static/js/plugins/scrollUp/jquery.scrollUp.min.js?v=63bbf26c1f"></script>
+<script src="/static/module/jquery-ui-1.12.1/jquery-ui.min.js?v=c15b1008de"></script>
+<script src="/static/js/jquery.cookie.js?v=20a0023596"></script>
+<script type="text/javascript" src="/static/js/layer/layer.js?v=8962f047ee" charset="utf-8"></script>
+
+<script language="javascript" type="text/javascript">
+    var rowData = [];
+    var $testcase_table = $('#testcase_table');
+
+    $(function () {
+        // 回到顶部链接
+        $.scrollUp({
+            animation: 'fade',
+            scrollDistance: '0',
+            activeOverlay: '#00FFFF',
+            scrollImg: {
+                active: true,
+                type: 'background',
+                src: '/static/js/plugins/scrollUp/img/top.png'
+            }
+        });
+
+        /*
+        $.ajax({
+            type: 'get',
+            url: '/data/get_project_list',
+            success: function (result) {
+                for (var i in result) {
+                    var app_name = result[i];
+                    $("#projects").append("<option value='" + app_name + "'>" + app_name + "</option>");
+                }
+            }
+        });
+        */
+
+        setTimeout("init_table()", 500);
+    })
+
+    // 初始化表格
+    function init_table() {
+        $testcase_table.bootstrapTable({
+            url: '/testcase/testplanDatagrid/',
+            striped: true,
+            sortable: true,
+            sortName: 'update_time',
+            sortOrder: 'desc',
+            silentSort: false,
+            pagination: true,
+            pageSize: 10,
+            sidePagination: "server", //表示服务端请求
+            queryParamsType: "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    searchText: params.searchText,
+                    systemAlias: $('#projects').val(),
+                    status: $('#status').val(),
+                };
+                return param;
+            },
+        });
+    }
+
+    // 加载数据表格
+    function reloadDatagrid() {
+        $testcase_table.bootstrapTable('showLoading');
+        $.ajax({
+            type: 'post',
+            url: '/testcase/testplanDatagrid/',
+            data: getParams(),
+            success: function (result) {
+                $testcase_table.bootstrapTable('load', result);
+                $testcase_table.bootstrapTable('hideLoading');
+            }
+        });
+    }
+
+    // 获取请求参数
+    function getParams() {
+        var tableOptions = $testcase_table.bootstrapTable('getOptions');
+        return {
+                pageNumber: tableOptions.pageNumber,
+                pageSize: tableOptions.pageSize,
+                systemAlias: $('#projects').val(),
+                status: $('#status').val(),
+            }
+    }
+
+    function formatParams(value, row, index) {
+        if (value.length > 256) {
+            return '<span class="label label-info">数据超长，请在详情页查看</span>';
+        } else {
+            return value;
+        }
+    }
+
+    // 格式化操作按钮
+    function showAction(value, row, index) {
+        rowData[index] = row;
+        var viewBtn = '<a type="button" data-toggle="modal" data-target="#detailDlg" onclick="showDetail(' + index + ')"><i class="fa fa-table" aria-hidden="true"> 详情</i></a>';
+        var removeBtn = '<a title="删除测试计划" type="button" style="color: #ED5565;" onclick="removeTestplan(' + row.id + ')"><i class="fa fa-trash" aria-hidden="true"> 删除</i></a>';
+        var runBtn = '<a title="执行测试计划" type="button" onclick="runTestplan(' + row.id + ')"><i class="fa fa-flash" aria-hidden="true"> 执行</i></a>';
+        var reportBtn = '<a title="查看测试报告" type="button" onclick="showReport(' + row.id + ')"><i class="fa fa-chrome" aria-hidden="true"> 报告</i></a>';
+        var str = viewBtn + '&nbsp;' + runBtn + '&nbsp;' + removeBtn;
+        if (row.status == 2) {
+            str += '&nbsp;' + reportBtn;
+        }
+        return str;
+    }
+
+    // 格式化通过率
+    function formatSuccRate(value, row, index) {
+        var str = '<span onclick="runTestplan(' + row.id + ')" class="btn btn-xs btn-info">' + value + '</span>';
+        var succRate = parseFloat(value.replace('%', '')).toFixed(2);
+        if (row.status != 0) {
+            if (succRate > 99) {
+                str = str.replace('btn-info', 'btn-primary');
+            } else if (succRate > 90) {
+                str = str.replace('btn-info', 'btn-warning');
+            } else {
+                str = str.replace('btn-info', 'btn-danger');
+            }
+        }
+        return str;
+    }
+
+    function showDetail(index) {
+        var row = rowData[index];
+        $('#testplan_name').val(row.name);
+        $('#env').val(row.env);
+        $('#start_time_str').val(row.start_time);
+        $('#testplan_status').val(row.status_text);
+        $('#actual_start_time').val(row.actual_start_time);
+        $('#actual_end_time').val(row.actual_end_time);
+    }
+
+    // 创建测试计划
+    function createTestplan() {
+        var system_alias = $('#projects').val();
+        if (system_alias != '') {
+            var url = '/testcase/testplanCreate/?systemAlias=' + system_alias;
+            var loading = layer.load();
+            $.ajax({
+                type: 'get',
+                url: url,
+                dataType: 'json',
+                success: function (result) {
+                    if (result.code == 0) {
+                        layer.alert(result.message, {icon: 1})
+                    } else {
+                        layer.alert(result.message, {icon: 0})
+                    }
+
+                    layer.close(loading);
+                    reloadDatagrid();
+                }
+            });
+        } else {
+            layer.alert('请选择一个应用名称!', {icon: 0})
+        }
+    }
+
+    // 删除测试计划
+    function removeTestplan(testplan_id) {
+        if (testplan_id) {
+            layer.confirm('确定要删除吗？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                var url = '/testcase/removeTestplan/';
+                var loading = layer.load();
+                $.ajax({
+                    type: 'post',
+                    url: url,
+                    data: {
+                        "testplanId": testplan_id,
+                    },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.code == 0) {
+                            layer.msg(result.message);
+                        } else {
+                            alert(result.message);
+                        }
+                        layer.close(loading);
+                        reloadDatagrid();
+                    }
+                });
+            }, function () {
+                layer.msg('用户取消了操作', {
+                    time: 3000
+                });
+            });
+
+        } else {
+            layer.msg('请选择一个测试计划!')
+        }
+    }
+
+    // 跳转到测试执行界面
+    function runTestplan(testplanId) {
+        var url = "/testcase/testExecutionPage/?testplanId=" + testplanId;
+        window.open(url);
+    }
+
+    // 显示测试报告
+    function showReport(testplanId) {
+        var url = "/testcase/reportPage/?testplanId=" + testplanId;
+        window.open(url);
+    }
+
+</script>
+
+</body>
+</html>

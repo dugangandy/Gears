@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN""http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <title>测试结果</title>
+    <link href="/static/app/testreport/cucumber.css?v=67961f5c9e" rel="stylesheet">
+    <script src="/static/js/jquery.min.js?v=f9c7afd057?v=2.1.4"></script>
+    <script type="text/javascript" src="/static/js/extJquery.js?v=f1c0f8651b" charset="utf-8"></script>
+    <script type="text/javascript" src="/static/js/layer/layer.js?v=8962f047ee" charset="utf-8"></script>
+    <script type="text/javascript" src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+</head>
+<body>
+<div id="report" class="cucumber" style="margin: 10px;">
+</div>
+
+<script type="text/javascript">
+    function htmlEscape(s) {
+        return (s + '').replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/'/g, '&#039;')
+            .replace(/"/g, '&quot;')
+            .replace(/\n/g, '<br />');
+    }
+
+
+    SCENARIOS = "h3[id^='testcase_']";
+    var loading = layer.load();
+
+    $(function () {
+        layer.config({
+            extend: 'extend/layer.ext.js'
+        });
+        makeGrey('cucumber-header');
+        runTestcase({{ testcaseId }});
+    });
+
+
+    function moveProgressBar(percentDone) {
+        $("cucumber-header").css('width', percentDone + "%");
+    }
+
+    function makeRed(element_id) {
+        $('#' + element_id).css('background', '#C40D0D');
+        $('#' + element_id).css('color', '#FFFFFF');
+    }
+
+    function makeYellow(element_id) {
+        $('#' + element_id).css('background', '#FAF834');
+        $('#' + element_id).css('color', '#000000');
+    }
+
+    function makeGrey(element_id) {
+        $('#' + element_id).css('background', '#D3D3D3');
+        $('#' + element_id).css('color', '#000000');
+    }
+
+    function makeGreen(element_id) {
+        $('#' + element_id).css('background', '#478f00');
+        $('#' + element_id).css('color', '#FFFFFF');
+    }
+
+    function setGlobalStyle() {
+        // 默认折叠全部
+        $(SCENARIOS).siblings().hide();
+        // 设置样式和事件
+        $(SCENARIOS).css('cursor', 'pointer');
+        $(SCENARIOS).click(function () {
+            $(this).siblings().toggle(250);
+        });
+
+        $("#collapser").css('cursor', 'pointer');
+        $("#collapser").click(function () {
+            $(SCENARIOS).siblings().hide();
+        });
+
+        $("#expander").css('cursor', 'pointer');
+        $("#expander").click(function () {
+            $(SCENARIOS).siblings().show();
+        });
+    }
+
+    // 执行测试用例，并加载结果
+    function runTestcase(testcaseId) {
+        $.ajax({
+            type: 'post',
+            url: '/testcase/testTestcase/',
+            async: false,
+            data: {
+                testcaseId: testcaseId,
+            },
+            success: function (result) {
+                var testresult = result.data;
+                var details = '';
+                var response_data = testresult.response_data;
+                var diff = testresult.diff;
+                var request_data = testresult.request_data;
+                try {
+                    response_data = $.trim(formatJson(response_data));
+                } catch (err) {
+                    // 非json数据需要html转义
+                    response_data = htmlEscape(response_data);
+                }
+                try {
+                    diff = $.trim(formatJson(diff));
+                } catch (err) {
+                }
+                try {
+                    request_data = $.trim(formatJson(request_data));
+                } catch (err) {
+                }
+                details += $.formatString('<div class="scenario"><h3 id="testcase_{0}"><span class="keyword">测试用例:</span>' +
+                    '<span class="val">{1}</span><span style="float:right">{2}</span></h3>' +
+                    '<ol>', testresult.id, testresult.api_name, testresult.result);
+                // 接口信息
+                details += $.formatString('<li class="step passed"><div class="step_name"><span class="keyword">请求URL：</span>' +
+                    '<span class="step val">{0}</span></div><div class="step_file"><span>{1}&nbsp;</span></div></li>',
+                    testresult.server_ip + testresult.api_name, testresult.method);
+                //入参
+                details += $.formatString('<li class="step passed"><div class="step_name"><span class="keyword">入参：</span>' +
+                    '<span class="step val"> </span></div><div class="step_file"><span>&nbsp;</span></div>' +
+                    '<pre class="ruby"><code id="request_data">{0}</code></pre></li>', request_data);
+                //返回值、报错信息等
+                details += $.formatString('<li id="response_{0}" class="step"><div class="step_name"><span class="keyword">实际返回值：</span>' +
+                    '<span class="step val"> </span></div><div class="step_file"><span>HTTP状态码: {1}&nbsp;</span></div>' +
+                    '<pre class="ruby"><code id="response_data">{2}</code></pre>',
+                    testresult.id, testresult.status_code, response_data);
+                if (testresult.result == 'fail') {
+                    details += $.formatString('<div class="message" id="message"><pre><b>报错信息：</b><br/>{0}</pre></div></li>', testresult.message);
+                }
+                //jsonschema校验
+                details += $.formatString('<li id="response_{0}" class="step passed"><div class="step_name"><span class="keyword">JsonSchema校验：</span>' +
+                    '<span class="step val"> </span></div><div class="step_file"><span> ...&nbsp;</span></div>' +
+                    '<pre class="ruby"><code id="jsonschema">{1}</code></pre>',
+                    testresult.id, testresult.jsonschema_result);
+                //检查点
+                details += $.formatString('<li id="response_{0}" class="step passed"><div class="step_name"><span class="keyword">检查点结果：</span>' +
+                    '<span class="step val"> </span></div><div class="step_file"><span> ...&nbsp;</span></div>' +
+                    '<pre class="ruby"><code id="jsonschema">{1}</code></pre>',
+                    testresult.id, testresult.checkpoint_result);
+                //返回值差异比对
+                details += $.formatString('<li id="response_data" class="step passed"><div class="step_name"><span class="keyword">返回值差异：</span>' +
+                    '<span class="step val"></span></div><div class="step_file"><span>仅供参考&nbsp;</span></div>' +
+                    '<pre class="ruby"><code id="diff">{0}</code></pre></li>', diff);
+                //执行时间
+                details += $.formatString('</ol><div class="senario_run_time">客户端IP: {0}</div>' +
+                    '<div class="senario_time_stamp">执行时间: {1}</div></div><br/></div>',
+                    testresult.client_ip, testresult.execute_time);
+                $('#report').append(details);
+                var testcase_obj = 'testcase_' + testresult.id;
+                var step_obj = '#response_' + testresult.id;
+                if (testresult.result == 'success') {
+                    makeGreen(testcase_obj);
+                    $(step_obj).addClass("passed");
+                } else {
+                    makeRed(testcase_obj);
+                    $(step_obj).addClass("failed");
+                }
+                layer.close(loading);
+
+                if (result.code != 0) {
+                    parent.layer.alert(result.message, {icon: 2});
+                }
+
+            }
+        });
+    }
+
+</script>
+
+</body>
+</html>

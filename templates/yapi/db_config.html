@@ -1,0 +1,411 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>数据库配置</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=78e7f91c0c?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/plugins/bootstrap-table/bootstrap-table.min.css?v=8a861bfab9" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css?v=269550530c?v=4.4.0" rel="stylesheet">
+
+    <link href="/static/css/animate.min.css?v=393d1040f9" rel="stylesheet">
+    <link href="/static/css/style.css?v=45c8f40c86?v=4.1.0" rel="stylesheet"> <!-- style.min.css有问题：对话框无法在顶端显示 -->
+
+    <link href="/static/js/plugins/scrollUp/css/themes/image.css?v=a70fca85fd" rel="stylesheet">
+    <link rel="stylesheet" href="/static/module/jquery-ui-1.12.1/jquery-ui.min.css?v=0b5729a931">
+    <script type="text/javascript" src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <div class="row animated fadeInRight">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="col-sm-12" style="padding-left: 0px">
+                        <input type="hidden" id="projects" value="{{ systemAlias }}"/>
+                        <label>
+                            <button onclick="reloadDatagrid();" style="margin-left:10px" id="btn_query"
+                                    class="btn btn-info"><i class="fa fa-search"></i> 查询
+                            </button>
+                        </label>
+                        <label>
+                            <button onclick="addConfig();" data-toggle="modal" data-target="#detailDlg"
+                                    style="margin-left:10px" id="btn_add" class="btn btn-primary">新增
+                            </button>
+                        </label>
+                    </div>
+
+                    <table id="db_config_table" style="word-break:break-all;">
+                        <thead>
+                        <tr>
+                            <th data-field="id" data-width="5%" data-align="center">key</th>
+{#                            <th data-field="system_alias" data-width="10%" data-align="center">应用名称</th>#}
+                            <th data-field="run_env_str" data-width="5%" data-align="center">运行环境</th>
+                            <th data-field="db_host" data-width="10%" data-align="center">数据库IP</th>
+                            <th data-field="db_port" data-width="5%" data-align="center">端口号</th>
+                            <th data-field="db_user" data-width="10%" data-align="center">用户名</th>
+                            <th data-field="db_name" data-width="10%" data-align="center">数据库名</th>
+                            {#                            <th data-field="updater" data-width="10%" data-align="center">修改人</th>#}
+                            <th data-field="update_time" data-width="15%" data-align="center">修改时间</th>
+                            <th data-field="action" data-width="15%" data-align="center" data-formatter="showAction">
+                                操作
+                            </th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade in" id="detailDlg" tabindex="1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-md">
+        <div class="modal-content animated fadeIn">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">数据库配置详情</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editFrom" method="get" action="">
+                    <input type="hidden" id="id"/>
+                    <table class="table table-bordered table-condensed">
+                            <th>运行环境：</th>
+                            <td>
+                                <select id="run_env" name="run_env"class="form-control" readonly="readonly" required>
+                                    <option value=4>UAT</option>
+                                    <option value=1>生产</option>
+                                    <option value=2>测试</option>
+                                    <option value=3>MIT</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>数据库IP：</th>
+                            <td>
+                                <input type="text" id="db_host" name="db_host" class="form-control"
+                                       readonly="readonly" placeholder="请输入数据库IP" required>
+                            </td>
+                        <tr>
+                            <th>端口号：</th>
+                            <td>
+                                <input type="text" id="db_port" name="db_port" class="form-control"
+                                       readonly="readonly" placeholder="默认值：3306" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>数据库名：</th>
+                            <td>
+                                <input type="text" id="db_name" name="db_name" class="form-control"
+                                       readonly="readonly" placeholder="请输入数据库名" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>用户名：</th>
+                            <td>
+                                <input type="text" id="db_user" name="db_user" class="form-control"
+                                       readonly="readonly" placeholder="请输入数据库用户名" required>
+                            </td>
+                        <tr>
+                            <th>密码：</th>
+                            <td>
+                                <input type="password" id="db_pwd" name="db_pwd" class="form-control"
+                                       readonly="readonly" placeholder="请输入数据库密码" required>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button id="connBtn" type="submit" class="btn btn-warning" style="float: left;" onclick="connDb()">连接测试</button>
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button id="saveBtn" type="submit" class="btn btn-primary" onclick="saveConfig()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="/static/js/jquery.min.js?v=f9c7afd057?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=281cd50dd9?v=3.3.6"></script>
+<script src="/static/js/plugins/bootstrap-table/bootstrap-table.min.js?v=eeb5b97857"></script>
+<script src="/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js?v=c8f1530c22"></script>
+<script src="/static/js/plugins/validate/jquery.validate.min.js?v=346e6b069a"></script>
+<script src="/static/js/plugins/validate/messages_zh.js?v=6af228ebea"></script>
+<script src="/static/js/plugins/scrollUp/jquery.scrollUp.min.js?v=63bbf26c1f"></script>
+<script src="/static/module/jquery-ui-1.12.1/jquery-ui.min.js?v=c15b1008de"></script>
+<script src="/static/js/jquery.cookie.js?v=20a0023596"></script>
+<script type="text/javascript" src="/static/js/layer/layer.js?v=8962f047ee?version=20180525" charset="utf-8"></script>
+
+<script language="javascript" type="text/javascript">
+    var rowData = [];
+    var $db_config_table = $('#db_config_table');
+
+    $(function () {
+        // 回到顶部链接
+        $.scrollUp({
+            animation: 'fade',
+            scrollDistance: '0',
+            activeOverlay: '#00FFFF',
+            scrollImg: {
+                active: true,
+                type: 'background',
+                src: '/static/js/plugins/scrollUp/img/top.png'
+            }
+        });
+
+        setTimeout("init_table()", 500);
+    })
+
+    // 初始化表格
+    function init_table() {
+        $db_config_table.bootstrapTable({
+            url: '/data/dbConfig/datagrid/',
+            striped: true,
+            sortable: true,
+            sortName: 'update_time',
+            sortOrder: 'desc',
+            silentSort: false,
+            pagination: true,
+            pageSize: 10,
+            sidePagination: "server", //表示服务端请求
+            queryParamsType: "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    searchText: params.searchText,
+                    systemAlias: $('#projects').val(),
+                };
+                return param;
+            },
+        });
+    }
+
+    // 加载数据表格
+    function reloadDatagrid() {
+        var tableOptions = $db_config_table.bootstrapTable('getOptions');
+        $db_config_table.bootstrapTable('showLoading');
+        $.ajax({
+            type: 'post',
+            url: '/data/dbConfig/datagrid/',
+            data: {
+                pageNumber: tableOptions.pageNumber,
+                pageSize: tableOptions.pageSize,
+                systemAlias: $('#projects').val(),
+            },
+            success: function (result) {
+                $db_config_table.bootstrapTable('load', result);
+                $db_config_table.bootstrapTable('hideLoading');
+            }
+        });
+    }
+
+
+    // 格式化操作按钮
+    function showAction(value, row, index) {
+        rowData[index] = row;
+        var viewBtn = '<button title="详情" type="button" class="btn btn-outline btn-primary btn-xs" data-toggle="modal" data-target="#detailDlg" onclick="showDetail(' + index + ')"><i class="fa fa-table" aria-hidden="true"> </i></button>';
+        var editBtn = '<button title="修改" type="button" class="btn btn-outline btn-warning btn-xs" data-toggle="modal" data-target="#detailDlg" onclick="editFun(' + index + ')"><i class="fa fa-pencil"> </i></button>';
+        var removeBtn = '<button title="删除" type="button" class="btn btn-outline btn-danger btn-xs" onclick="removeConfig(' + row.id + ')"><i class="fa fa-trash" aria-hidden="true"> </i></button>';
+        return viewBtn + '&nbsp;' + editBtn + '&nbsp;' + removeBtn;
+    }
+
+    // 查看用例详情
+    function showDetail(index) {
+        $('#saveBtn').hide();
+        $('#detailDlg input').attr('readonly', 'readonly');
+        $('#detailDlg h4').html('数据库配置详情');
+
+        var row = rowData[index];
+        $('#id').val(row.id);
+        $('#system_alias').val(row.system_alias);
+        $('#run_env').val(row.run_env);
+        $('#db_host').val(row.db_host);
+        $('#db_port').val(row.db_port);
+        $('#db_name').val(row.db_name);
+        $('#db_user').val(row.db_user);
+        $('#db_pwd').val(row.db_pwd);
+
+    }
+
+    // 编辑数据库配置
+    function editFun(index) {
+        showDetail(index);
+        $('#detailDlg h4').html('编辑数据库配置');
+        $('#detailDlg input').removeAttr('readonly');
+        //$('#system_alias').attr('readonly', 'readonly');
+        $('#saveBtn').show();
+    }
+
+    // 删除数据库配置
+    function removeConfig(id) {
+        if (id) {
+            layer.confirm('确定要删除吗？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                var url = '/data/dbConfig/remove/';
+                var loading = layer.load();
+                $.ajax({
+                    type: 'post',
+                    url: url,
+                    data: {
+                        "id": id,
+                    },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.code == 0) {
+                            layer.alert(result.message, {icon: 1});
+                        } else {
+                            layer.alert(result.message);
+                        }
+                        layer.close(loading);
+                        reloadDatagrid();
+                    }
+                });
+            }, function () {
+                layer.msg('用户取消了操作', {
+                    time: 3000
+                });
+            });
+
+        } else {
+            layer.msg('请选择一个数据库配置!')
+        }
+    }
+
+    // 保存按钮操作
+    function saveConfig() {
+        var form = $('#editFrom');
+        form.validate();
+        if (form.valid()) {
+            var loading = layer.load();
+            var params = {
+                "id": $('#id').val(),
+                "system_alias": $('#system_alias').val(),
+                "run_env": $('#run_env').val(),
+                "db_host": $('#db_host').val(),
+                "db_port": $('#db_port').val(),
+                "db_name": $('#db_name').val(),
+                "db_user": $('#db_user').val(),
+                "db_pwd": $('#db_pwd').val(),
+            };
+
+            $.ajax({
+                url: "/data/dbConfig/save/",
+                type: "post",
+                dataType: "json",
+                data: params,
+                async: true,
+                beforeSend: function (xhr, setting) {
+                },
+                success: function (result) {
+                    layer.close(loading);
+                    reloadDatagrid();
+
+                    if (result.code == 0) {
+                        $('#detailDlg').modal('hide');
+                        layer.msg('保存成功.');
+                    } else {
+                        layer.alert(result.message, {icon: 2});
+                    }
+                },
+                error: function () {
+                    layer.alert('发生异常，请重试.', {icon: 2});
+                }
+            });
+        }
+    }
+
+    // 新增数据库配置
+    function addConfig() {
+        $('#detailDlg input').val('');
+        $('#detailDlg h4').html('新增数据库配置');
+        $('#detailDlg input').removeAttr('readonly');
+        $('#system_alias').val($('#projects').val());
+        //$('#system_alias').attr('readonly', 'readonly');
+
+        $('#saveBtn').show();
+    }
+
+    // 清理备份表
+    function cleanupDatabase() {
+        layer.confirm('确定要删除备份表吗？', {
+            btn: ['确定', '取消'] //按钮
+        }, function () {
+            var url = '/data/database/cleanup/';
+            var loading = layer.load();
+            $.ajax({
+                type: 'post',
+                url: url,
+                data: {
+                    "systemAlias": $('#projects').val(),
+                },
+                dataType: 'json',
+                success: function (result) {
+                    if (result.code == 0) {
+                        layer.alert(result.message, {icon: 1});
+                    } else {
+                        layer.alert(result.message);
+                    }
+                    layer.close(loading);
+                }
+            });
+        }, function () {
+            layer.msg('用户取消了操作', {
+                time: 3000
+            });
+        });
+    }
+
+
+    // 数据库连接测试
+    function connDb() {
+        var form = $('#editFrom');
+        form.validate();
+        if (form.valid()) {
+            var loading = layer.load();
+            var params = {
+                "db_host": $('#db_host').val(),
+                "db_port": $('#db_port').val(),
+                "db_name": $('#db_name').val(),
+                "db_user": $('#db_user').val(),
+                "db_pwd": $('#db_pwd').val()
+            };
+
+            $.ajax({
+                url: "/data/yapi/dbConnect/",
+                type: "post",
+                dataType: "json",
+                data: params,
+                async: true,
+                beforeSend: function (xhr, setting) {
+                },
+                success: function (result) {
+                    layer.close(loading);
+
+                    if (result.code == 0) {
+                        layer.msg('连接数据库成功.');
+                    } else {
+                        layer.alert(result.message, {icon: 2});
+                    }
+                },
+                error: function () {
+                    layer.close(loading);
+                    layer.alert('连接数据库发生异常，请重试.', {icon: 2});
+                }
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

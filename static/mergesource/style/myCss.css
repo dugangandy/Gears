@@ -1,0 +1,238 @@
+.tableForm {
+	border-collapse: collapse;
+}
+
+.tableForm th {
+	text-align: right;
+	border-bottom: 1px dotted #ccc;
+	padding: 5px;
+}
+
+.tableForm td {
+	text-align: left;
+	border-bottom: 1px dotted #ccc;
+	padding: 5px;
+}
+
+.info {
+	background: #FFFEE6;
+	color: #8F5700;
+	padding: 12px;
+}
+
+a.favorite {
+	display: block;
+	float: right;
+	width: 20px;
+	height: 21px;
+	margin-right: 8px;
+	background: url('images/favicon.png') no-repeat;
+	text-indent: -9999px;
+	outline: none;
+}
+
+.tip {
+	width: 24px;
+	height: 16px;
+	float: left;
+}
+
+img {
+	cursor: pointer;
+}
+
+.txt-impt {
+	color: #C00;
+	font-family: 微软雅黑, "Times New Roman", Georgia, Serif;
+	font-size: 110%;
+	font-weight: bold;
+}
+
+.table th {
+	border-top: 1px solid #DDDDDD;
+	line-height: 20px;
+	padding: 8px;
+	font-weight: normal;
+	text-align: right;
+	vertical-align: center;
+}
+
+.hd_login {
+	/* color: #0066CC; */
+	color: #fa5000 !important;
+	font-size: 100%;
+	/* font-weight:bold; */
+}
+
+.txt-tips {
+	color: #0066CC;
+	font-family: 微软雅黑, "Times New Roman", Georgia, Serif;
+	font-size: 100%;
+	font-weight: normal;
+}
+
+.txt-bold {
+	color: #C00;
+	font-weight: bold;
+}
+
+@charset "utf-8";
+/*reset*/
+html,body,p,ul,li,dl,dt,dd,h1,h2,h3,h4,h5,h6,form,input,select,button,textarea,iframe,table,th,td,ol
+	{
+	padding: 0;
+	margin: 0;
+}
+
+/* body {
+	background-position: 0 -450px;
+	font: 12px Arial, Lucida, Verdana, Helvetica, SimSun, sans-serif;
+	color: #666;
+} */
+body {
+	background-color: #FFFFFF;
+	color: #333333;
+	font-family: "Helvetica Neue", Helvetica, Tahoma, Arial, sans-serif;
+	font-size: 13px; ! important;
+	line-height: 20px;
+}
+
+.panel-body {
+	/*     background-color: #FFFFFF;
+    color: #000000; 
+    font-size: 13px; !important; */
+	
+}
+
+img {
+	border: none;
+}
+
+ul,li,ol {
+	list-style: none outside none;
+	word-spacing: normal;
+}
+
+button {
+	cursor: pointer;
+}
+
+.clearfix {
+	zoom: 1;
+}
+
+.clearfix:after {
+	content: "";
+	display: block;
+	height: 0;
+	line-height: 0;
+	clear: both;
+	visibility: hidden;
+}
+
+em {
+	font-style: normal;
+}
+
+a {
+	text-decoration: none;
+	color: #207499;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus {
+	outline: none;
+}
+
+a {
+	blr: expression(this.onFocus = this.blur ());
+}
+
+/*定位设置*/
+.fl {
+	float: left;
+}
+
+.fr {
+	float: right;
+}
+
+.tl {
+	text-align: left;
+}
+
+.tc {
+	text-align: center;
+}
+
+.tr {
+	text-align: right;
+}
+
+.input {
+	height: 25px;
+}
+
+/* 测试用例步骤表格样式  */
+.colhead td {
+	background-color: #EFEFEF;
+	text-align: center;
+}
+
+.colhead th {
+	background-color: #EFEFEF;
+	border-bottom: 1px solid #E4E4E4;
+	font-size: 12px;
+	font-weight: bold;
+	height: 24px;
+	text-align: center;
+}
+
+.colhead a {
+	display: block;
+	text-decoration: none;
+}
+
+.colhead th a {
+	color: #333333;
+	font-size: 12px;
+}
+
+.colhead th a:hover {
+	color: #FF3300;
+}
+
+.rowhead {
+	border: 0 none;
+	font-weight: bold;
+	text-align: right;
+	width: 100px;
+}
+
+.blockSpan {
+	display: inline-block;
+	width: 250px;
+}
+
+.buttonMenu .btngroup {
+	padding: 6px 10px;
+}
+
+.casedetail {
+	background: #EEE;
+	border: thin solid black;
+	/* font-size:		90%; */
+	margin: 10px;
+	width: 97%;
+}
+
+/*合计单元格样式*/
+.subtotal {
+	color: darkblue;
+	font-size: 14px;
+	font-weight: bold;
+	font-family: Arial, Helvetica, sans-serif;
+}

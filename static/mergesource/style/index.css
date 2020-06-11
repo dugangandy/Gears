@@ -1,0 +1,111 @@
+.tableForm {
+	border-collapse: collapse;
+}
+
+.tableForm th {
+	text-align: right;
+	border-bottom: 1px dotted #ccc;
+	padding: 5px;
+}
+
+.tableForm td {
+	text-align: left;
+	border-bottom: 1px dotted #ccc;
+	padding: 5px;
+}
+
+.logo {
+	background: url('images/atms_icons/company_logo.gif') no-repeat #ffffff
+		1% 0%;
+}
+
+.info {
+	background: #FFFEE6;
+	color: #8F5700;
+	padding: 12px;
+}
+
+.tip {
+	width: 24px;
+	height: 16px;
+	float: left;
+}
+
+img {
+	cursor: pointer;
+}
+
+.btn_space {
+	margin-right: 10px;
+}
+
+.btn_gray {
+	background: -moz-linear-gradient(center top, #FFFFFF 0%, #EBEBEB 90%, #F3F3F3 100%)
+		repeat scroll 0 0 transparent;
+	border: 0px solid #888888;
+	color: #000000 !important;
+}
+
+.header_box {
+	height: 60px;
+	margin: 0 0 0 15px;
+	overflow: visible;
+}
+
+.header_box .logo {
+	float: left;
+	width: 200px;
+	height: 60px;
+	background: url(images/atms_icons/company_logo.gif) 0 5px no-repeat;
+}
+
+.header_box .nav {
+	overflow: visible;
+	float: left;
+	margin-left: 10px;
+}
+
+.header_box .nav li {
+	font-size: 16px;
+	font-family: '微软雅黑';
+	float: left;
+	height: 36px;
+	text-align: center;
+	padding-top: 25px;	
+	margin-right: 5px;
+}
+
+.header_box .nav li a {	
+	color: #0088cc;
+	display: block;
+	height: 36px;
+	padding: 0 15px;
+	line-height: 36px;
+	border-radius: 4px;
+}
+
+.header_box .nav li .submenu {
+	float: left;
+	height: 36px;
+	text-align: center;
+	padding-top: 0px;
+	font-size: 16px;
+	margin-right: 5px;
+}
+
+.nav li.on a, .nav li.on a:hover {
+	color: #fff;
+	text-decoration: none;
+	background: #0088cc;
+}
+
+.nav li a:hover {
+	color: #ff0000;
+	text-decoration: none;
+}
+
+.dropdown-toggleme .caret {
+	margin-top: 16px;
+	border-top-color: #08c;
+	border-bottom-color: #08c;
+}

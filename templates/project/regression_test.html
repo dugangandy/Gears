@@ -1,0 +1,328 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>应用列表</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=78e7f91c0c?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/plugins/bootstrap-table/bootstrap-table.min.css?v=8a861bfab9" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css?v=269550530c?v=4.4.0" rel="stylesheet">
+
+    <link href="/static/css/animate.min.css?v=393d1040f9" rel="stylesheet">
+    <link href="/static/css/style.css?v=45c8f40c86?v=4.1.0" rel="stylesheet"> <!-- style.min.css有问题：对话框无法在顶端显示 -->
+
+    <link href="/static/js/plugins/scrollUp/css/themes/image.css?v=a70fca85fd" rel="stylesheet">
+    <link rel="stylesheet" href="/static/module/jquery-ui-1.12.1/jquery-ui.min.css?v=0b5729a931">
+    <script type="text/javascript" src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- 应用列表查询 -->
+    <section id="realtime_errlog_list"></section>
+    <div class="row animated fadeInRight">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="col-sm-12" style="padding-left: 0px">
+                        {#                        <input type="hidden" id="projects" value="{{ systemAlias }}"/>#}
+                        <label>
+                            <select id="buName" class="form-control m-b" value="{{ bu_name }}"
+                                    onchange="reloadDatagrid();" style="width:150px;">
+                                <option selected value=''>所有业务线</option>
+                            </select>
+                        </label>
+
+                        <label>
+                            <button onclick="reloadDatagrid();" style="margin-left:10px" id="btn_query"
+                                    class="btn btn-info"><i class="fa fa-search"></i> 查询
+                            </button>
+                        </label>
+
+                    </div>
+
+                    <table id="project_table" style="word-break:break-all;">
+                        <thead>
+                        <tr>
+                            <th data-field="project_name" data-width="15%">用例名称</th>
+                            <th data-field="project_name" data-width="10%">场景描述</th>
+                            {#                            <th data-field="type" data-width="10%" data-align="center">类型</th>#}
+                            <th data-field="api_count" data-width="5%" data-align="center">最后执行时间</th>
+                            <th data-field="domain_name" data-width="10%" data-align="left"
+                                data-formatter="formatDomainName">最后执行结果
+                            </th>
+                            <th data-field="action" data-width="30%" data-align="center" data-formatter="showAction">
+                                操作
+                            </th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade in" id="detailDlg" tabindex="1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated fadeIn">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">测试用例详情</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editFrom" method="get" action="">
+                    <input type="hidden" id="id"/>
+                    <table class="table table-bordered table-condensed">
+                        <tr>
+                            <th width="10%">用例摘要：</th>
+                            <td colspan="3">
+                                <input type="text" id="summary" name="summary" class="form-control" readonly="readonly"
+                                       placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>接口名：</th>
+                            <td colspan="3">
+                                <input type="text" id="api_name" name="api_name" class="form-control"
+                                       readonly="readonly" placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>请求数据：</th>
+                            <td>
+                                <textarea rows=10 id="request_data" name="request_data" class="form-control"
+                                          style="resize:none;" readonly="readonly" placeholder=""
+                                          maxlength="409600"></textarea>
+                            </td>
+                            <th width="10%">响应数据（预期）：</th>
+                            <td>
+                                <textarea rows=10 id="response_data" name="response_data" class="form-control"
+                                          style="resize:none;" readonly="readonly" placeholder=""
+                                          maxlength="4096000"></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button id="saveBtn" type="submit" class="btn btn-primary" onclick="saveTestcase()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="/static/js/jquery.min.js?v=f9c7afd057?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=281cd50dd9?v=3.3.6"></script>
+<script src="/static/js/plugins/bootstrap-table/bootstrap-table.min.js?v=eeb5b97857"></script>
+<script src="/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js?v=c8f1530c22"></script>
+<script src="/static/js/plugins/validate/jquery.validate.min.js?v=346e6b069a"></script>
+<script src="/static/js/plugins/validate/messages_zh.js?v=6af228ebea"></script>
+<script src="/static/js/plugins/scrollUp/jquery.scrollUp.min.js?v=63bbf26c1f"></script>
+<script src="/static/module/jquery-ui-1.12.1/jquery-ui.min.js?v=c15b1008de"></script>
+<script src="/static/js/jquery.cookie.js?v=20a0023596"></script>
+<script type="text/javascript" src="/static/js/extJquery.js?v=f1c0f8651b" charset="utf-8"></script>
+<script type="text/javascript" src="/static/js/layer/layer.js?v=8962f047ee?version=20180525" charset="utf-8"></script>
+
+<script language="javascript" type="text/javascript">
+    var rowData = [];
+    var $project_table = $('#project_table');
+
+    $(function () {
+        // 回到顶部链接
+        $.scrollUp({
+            animation: 'fade',
+            scrollDistance: '0',
+            activeOverlay: '#00FFFF',
+            scrollImg: {
+                active: true,
+                type: 'background',
+                src: '/static/js/plugins/scrollUp/img/top.png'
+            }
+        });
+
+        // 加载业务线
+        $.ajax({
+            type: 'get',
+            url: '/cmdb/productlines',
+            success: function (result) {
+                var rows = result['rows'];
+                for (var i in rows) {
+                    var bu_name = rows[i].bu_name;
+                    $("#buName").append("<option value='" + bu_name + "'>" + bu_name + "</option>");
+                }
+            }
+        });
+
+        setTimeout("init_table()", 500);
+        {#loadApilist();#}
+    });
+
+    // 初始化表格
+    function init_table() {
+        $project_table.bootstrapTable({
+            url: '/testcase/projectDatagrid',
+            striped: true,
+            sortable: true,
+            sortName: 'update_time',
+            sortOrder: 'desc',
+            silentSort: false,
+            pagination: true,
+            pageSize: 15,
+            sidePagination: "server", //表示服务端请求
+            queryParamsType: "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    searchText: params.searchText,
+                    buName: $('#buName').val(),
+                    hasApi: $('#hasApi').val(),
+                };
+                return param;
+            },
+        });
+    }
+
+    // 加载数据表格
+    function reloadDatagrid() {
+        var tableOptions = $project_table.bootstrapTable('getOptions');
+        $project_table.bootstrapTable('showLoading');
+        $.ajax({
+            type: 'post',
+            url: '/testcase/projectDatagrid/',
+            data: {
+                pageNumber: tableOptions.pageNumber,
+                pageSize: tableOptions.pageSize,
+                buName: $('#buName').val(),
+                hasApi: $('#hasApi').val(),
+            },
+            success: function (result) {
+                $project_table.bootstrapTable('load', result);
+                $project_table.bootstrapTable('hideLoading');
+            }
+        });
+    }
+
+    // 设置域名显示内容
+    function formatDomainName(value, row, index) {
+        var str = '';
+        if (value.length > 0) {
+            if (row.access_type !== 1) {
+                str = $.formatString('{0} &nbsp;<span title="该应用通过【域名】访问" onclick="toggleDomain({1});" style="color:#428bca;"><i class="fa fa-toggle-on fa-lg"> </i></span>', value, row.id);
+            } else {
+                str = $.formatString('{0} &nbsp;<span title="该应用通过【IP】访问" onclick="toggleDomain({1});"><i class="fa fa-toggle-off fa-lg"> </i></span>', value, row.id);
+            }
+
+        } else {
+            str = '-';
+        }
+        return str;
+    }
+
+    // 切换域名或IP访问
+    function toggleDomain(id) {
+        var loading = layer.load(1);
+        $.ajax({
+            type: 'post',
+            url: '/testcase/projectToggleDomain/',
+            data: {
+                projectId: id,
+            },
+            success: function (result) {
+                layer.close(loading);
+                if (result.code == 0) {
+                    layer.msg("切换成功");
+                    reloadDatagrid();
+                } else {
+                    layer.alert(result.message, {icon: 2});
+                }
+            }
+        });
+    }
+
+    // 选择仅显示有接口
+    function selectHasApi() {
+        var checked = $('#hasApi').prop('checked');
+        var hasApi = 0;
+        if (checked) {
+            hasApi = 1;
+        }
+        $('#hasApi').val(hasApi);
+    }
+
+    // 同步应用数据
+    function syncProject(name) {
+        var loading = layer.load(0);
+        $.ajax({
+            type: 'post',
+            url: '/testcase/projectSync/',
+            data: {
+                name: name,
+            },
+            success: function (result) {
+                layer.close(loading);
+                if (result.code == 0) {
+                    layer.msg(result.message);
+                    reloadDatagrid();
+                } else {
+                    layer.alert(result.message, {icon: 2});
+                }
+            }
+        });
+    }
+
+    // 格式化操作按钮
+    function showAction(value, row, index) {
+        rowData[index] = row;
+        var syncBtn = '<a title="同步应用数据" onclick="syncProject(\'' + row.project_name + '\')"><i class="fa fa-cloud-download"> </i>同步</a>';
+        var viewBtn = '<a title="查看应用详情" target="_blank" href="/project/?name=' + row.project_name + '"><i class="fa fa-gears"> </i>应用详情</a>';
+        {#var removeBtn = '<button title="删除" type="button" class="btn btn-outline btn-danger btn-xs" onclick="removeTestcase(' + row.id + ')"><i class="fa fa-trash" aria-hidden="true"> </i></button>';#}
+        return syncBtn + '&nbsp;&nbsp;' + viewBtn;
+    }
+
+
+    // 查看用例详情
+    function showDetail(index) {
+        $('#saveBtn').hide();
+        $('#detailDlg textarea').attr('readonly', 'readonly');
+        $('#summary').attr('readonly', 'readonly');
+        $('#detailDlg h4').html('测试用例详情');
+
+        var row = rowData[index];
+        $('#id').val(row.id);
+        $('#summary').val(row.summary);
+        $('#api_name').val(row.api_name);
+        try {
+            $('#request_data').val($.trim(formatJson(row.request_data)));
+            $('#response_data').val($.trim(formatJson(row.response_data)));
+        } catch (err) {
+            console.error(err);
+            $('#request_data').val(row.request_data);
+            $('#response_data').val(row.response_data);
+        }
+    }
+
+
+    // 编辑测试用例
+    function editFun(index) {
+        showDetail(index);
+        $('#detailDlg h4').html('编辑测试用例');
+        $('#detailDlg textarea').removeAttr('readonly');
+        $('#summary').removeAttr('readonly');
+        $('#saveBtn').show();
+    }
+
+</script>
+
+</body>
+</html>

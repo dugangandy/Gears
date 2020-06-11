@@ -1,0 +1,545 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>测试用例</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=78e7f91c0c?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/plugins/bootstrap-table/bootstrap-table.min.css?v=8a861bfab9" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css?v=269550530c?v=4.4.0" rel="stylesheet">
+
+    <link href="/static/css/animate.min.css?v=393d1040f9" rel="stylesheet">
+    <link href="/static/css/style.css?v=45c8f40c86?v=4.1.0" rel="stylesheet"> <!-- style.min.css有问题：对话框无法在顶端显示 -->
+
+    <link href="/static/js/plugins/scrollUp/css/themes/image.css?v=a70fca85fd" rel="stylesheet">
+    <link rel="stylesheet" href="/static/module/jquery-ui-1.12.1/jquery-ui.min.css?v=0b5729a931">
+    <script type="text/javascript" src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <section id="realtime_errlog_list"></section>
+    <div class="row animated fadeInRight">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="col-sm-12" style="padding-left: 0px">
+                        <input type="hidden" id="projects" value="{{ systemAlias }}"/>
+                        {#                        <label>#}
+                        {#                            <select id="projects" class="form-control m-b" value="{{ systemAlias }}"#}
+                        {#                                    onchange="loadApilist();reloadDatagrid();" style="width:280px;">#}
+                        {#                                <option selected value=''>所有应用</option>#}
+                        {#                            </select>#}
+                        {#                        </label>#}
+                        <label>
+                            <select id="apiLevel" class="form-control m-b" value="{{ apiLevel }}"
+                                    onchange="loadApilist();reloadDatagrid();" style="width:120px;">
+                                <option value=''>所有级别</option>
+                                <option value='P1'>P1</option>
+                                <option value='P2'>P2</option>
+                                <option value='P3'>P3</option>
+                                <option value='P4'>P4</option>
+                            </select>
+                        </label>
+                        <label>
+                            <select id="apiName" class="form-control m-b" value="{{ apiName }}"
+                                    onchange="reloadDatagrid();" style="width:350px;">
+{#                                <option selected value=''>所有接口</option>#}
+                            </select>
+                        </label>
+                        <label>
+                            <input type="checkbox" id="showEnabled" value=0 onclick="selectShowEnabled();"
+                                   onchange="reloadDatagrid();"/> 仅显示启用
+                        </label>
+                        <label>
+                            <a href="javascript:window.location.reload();" style="margin-left:10px" id="btn_query"
+                               class="btn btn-info"><i class="fa fa-refresh"></i></a>
+                        </label>
+                        <label>
+                            <button onclick="reloadDatagrid();" style="margin-left:10px" id="btn_query"
+                                    class="btn btn-info"><i class="fa fa-search"></i> 查询
+                            </button>
+                        </label>
+                        <label>
+                            <button onclick="addTestcase();" data-toggle="modal" data-target="#detailDlg"
+                                    style="margin-left:10px" id="btn_add" class="btn btn-primary">新增用例
+                            </button>
+                        </label>
+                        <label style="display: none;">
+                            <button onclick="generateTestcase();" style="margin-left:10px" id="btn_query"
+                                    class="btn btn-warning">生成测试用例
+                            </button>
+                        </label>
+{#                        <label>#}
+{#                            <button onclick="createTestplan();" style="margin-left:10px" id="btn_query"#}
+{#                                    class="btn btn-warning">创建测试计划#}
+{#                            </button>#}
+{#                        </label>#}
+                    </div>
+
+                    <table id="testcase_table" style="word-break:break-all;">
+                        <thead>
+                        <tr>
+                            <th data-field="api_name" data-width="20%">接口名</th>
+                            <th data-field="request_data" data-width="30%" data-formatter="formatParams"
+                                data-align="left">请求参数
+                            </th>
+                            <th data-field="env" data-width="5%" data-align="center">运行环境</th>
+
+                            {#                            <th data-field="updater" data-width="8%" data-align="center">修改人</th>#}
+                            <th data-field="update_time" data-width="15%" data-align="center">修改时间</th>
+                            <th data-field="checkpoint" data-width="5%" data-align="center"
+                                data-formatter="showCheckpoint">检查点
+                            </th>
+                            <th data-field="status" data-width="5%" data-align="center" data-formatter="formatEnabled">
+                                是否启用
+                            </th>
+                            <th data-field="action" data-width="12%" data-align="center" data-formatter="showAction">
+                                操作
+                            </th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade in" id="detailDlg" tabindex="1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated fadeIn">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">测试用例详情</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editFrom" method="get" action="">
+                    <input type="hidden" id="id"/>
+                    <table class="table table-bordered table-condensed">
+                        <tr>
+                            <th width="10%">用例摘要：</th>
+                            <td colspan="3">
+                                <input type="text" id="summary" name="summary" class="form-control" readonly="readonly"
+                                       placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>接口名：</th>
+                            <td colspan="3">
+                                <input type="text" id="api_name" name="api_name" class="form-control"
+                                       readonly="readonly" placeholder="" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>请求数据：</th>
+                            <td>
+                                <textarea rows=10 id="request_data" name="request_data" class="form-control"
+                                          style="resize:none;" readonly="readonly" placeholder=""
+                                          maxlength="409600"></textarea>
+                            </td>
+                            <th width="10%">响应数据（预期）：</th>
+                            <td>
+                                <textarea rows=10 id="response_data" name="response_data" class="form-control"
+                                          style="resize:none;" readonly="readonly" placeholder=""
+                                          maxlength="4096000" required></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button id="saveBtn" type="submit" class="btn btn-primary" onclick="saveTestcase()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="/static/js/jquery.min.js?v=f9c7afd057?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=281cd50dd9?v=3.3.6"></script>
+<script src="/static/js/plugins/bootstrap-table/bootstrap-table.min.js?v=eeb5b97857"></script>
+<script src="/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js?v=c8f1530c22"></script>
+<script src="/static/js/plugins/validate/jquery.validate.min.js?v=346e6b069a"></script>
+<script src="/static/js/plugins/validate/messages_zh.js?v=6af228ebea"></script>
+<script src="/static/js/plugins/scrollUp/jquery.scrollUp.min.js?v=63bbf26c1f"></script>
+<script src="/static/module/jquery-ui-1.12.1/jquery-ui.min.js?v=c15b1008de"></script>
+<script src="/static/js/jquery.cookie.js?v=20a0023596"></script>
+<script type="text/javascript" src="/static/js/extJquery.js?v=f1c0f8651b" charset="utf-8"></script>
+<script type="text/javascript" src="/static/js/layer/layer.js?v=8962f047ee?version=20180525" charset="utf-8"></script>
+
+<script language="javascript" type="text/javascript">
+    var rowData = [];
+    var $testcase_table = $('#testcase_table');
+
+    $(function () {
+        // 回到顶部链接
+        $.scrollUp({
+            animation: 'fade',
+            scrollDistance: '0',
+            activeOverlay: '#00FFFF',
+            scrollImg: {
+                active: true,
+                type: 'background',
+                src: '/static/js/plugins/scrollUp/img/top.png'
+            }
+        });
+
+        setTimeout("init_table()", 500);
+        loadApilist();
+    })
+
+
+    // 初始化表格
+    function init_table() {
+        $testcase_table.bootstrapTable({
+            url: '/testcase/datagrid',
+            striped: true,
+            sortable: true,
+            sortName: 'update_time',
+            sortOrder: 'desc',
+            silentSort: false,
+            pagination: true,
+            pageSize: 10,
+            sidePagination: "server", //表示服务端请求
+            queryParamsType: "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    searchText: params.searchText,
+                    systemAlias: $('#projects').val(),
+                    apiName: $('#apiName').val(),
+                    apiLevel: $('#apiLevel').val(),
+                    showEnabled: $('#showEnabled').val(),
+                };
+                return param;
+            },
+
+        });
+    }
+
+    // 选择显示最新
+    function selectShowEnabled() {
+        var checked = $('#showEnabled').prop('checked');
+        var showEnabled = 0;
+        if (checked) {
+            showEnabled = 1;
+        }
+        $('#showEnabled').val(showEnabled);
+    }
+
+    // 加载数据表格
+    function reloadDatagrid() {
+        var tableOptions = $testcase_table.bootstrapTable('getOptions');
+        $testcase_table.bootstrapTable('showLoading');
+        $.ajax({
+            type: 'post',
+            url: '/testcase/datagrid/',
+            data: {
+                pageNumber: tableOptions.pageNumber,
+                pageSize: tableOptions.pageSize,
+                systemAlias: $('#projects').val(),
+                apiName: $('#apiName').val(),
+                apiLevel: $('#apiLevel').val(),
+                showEnabled: $('#showEnabled').val(),
+            },
+            success: function (result) {
+                $testcase_table.bootstrapTable('load', result);
+                $testcase_table.bootstrapTable('hideLoading');
+            }
+        });
+    }
+
+    function formatParams(value, row, index) {
+        if (value.length > 256) {
+            return value.substring(0, 255) + '<button onclick="showDetail(' + index + ');" class="label label-info" ' +
+                'data-toggle="modal" data-target="#detailDlg" >更多...</button>';
+        } else {
+            return value;
+        }
+    }
+
+    ''
+
+    // 格式化操作按钮
+    function showAction(value, row, index) {
+        rowData[index] = row;
+        var viewBtn = '<button title="详情" type="button" class="btn btn-outline btn-primary btn-xs" data-toggle="modal" data-target="#detailDlg" onclick="showDetail(' + index + ')">详情</button>';
+        var editBtn = '<button title="修改" type="button" class="btn btn-outline btn-warning btn-xs" data-toggle="modal" data-target="#detailDlg" onclick="editFun(' + index + ')">编辑</button>';
+        var removeBtn = '<button title="删除" type="button" class="btn btn-outline btn-danger btn-xs" onclick="removeTestcase(' + row.id + ')">删除</button>';
+        var testBtn = '<button title="测试一下" type="button" class="btn btn-outline btn-primary btn-xs" onclick="runTestcase(' + row.id + ')">测试</button>';
+        return testBtn + '&nbsp;' + viewBtn + '&nbsp;' + editBtn + '&nbsp;' + removeBtn;
+    }
+
+    function showCheckpoint(value, row, index) {
+        var str = '';
+        if (row.checkpoint_count > 0) {
+            str = '<button title="检查点个数" onclick="showCheckpointPage(\'' + row.id + '\')" class="btn btn-primary btn-xs"><strong>' +
+            row.checkpoint_count + '</strong></button>';
+        } else {
+            str = '<button title="新增检查点" onclick="showCheckpointPage(\'' + row.id + '\')" class="btn btn-outline btn-info btn-xs"><i class="fa fa-plus-circle"></i></button>';
+        }
+        return str;
+    }
+
+    // 查看用例详情
+    function showDetail(index) {
+        $('#saveBtn').hide();
+        $('#detailDlg textarea').attr('readonly', 'readonly');
+        $('#summary').attr('readonly', 'readonly');
+        $('#detailDlg h4').html('测试用例详情');
+
+        var row = rowData[index];
+        $('#id').val(row.id);
+        $('#summary').val(row.summary);
+        $('#api_name').val(row.api_name);
+        try {
+            $('#request_data').val($.trim(formatJson(row.request_data)));
+            $('#response_data').val($.trim(formatJson(row.response_data)));
+        } catch (err) {
+            console.error(err);
+            $('#request_data').val(row.request_data);
+            $('#response_data').val(row.response_data);
+        }
+    }
+
+    // 编辑测试用例
+    function editFun(index) {
+        showDetail(index);
+        $('#detailDlg h4').html('编辑测试用例');
+        $('#detailDlg textarea').removeAttr('readonly');
+        $('#summary').removeAttr('readonly');
+        $('#saveBtn').show();
+    }
+
+    function showCheckpointPage(testcaseId) {
+        var url = '/testcase/checkpointPage/?testcaseId=' + testcaseId;
+        layer.open({
+            type: 2,
+            title: '测试用例检查点列表',
+            area: ['800px', '480px'], //宽高
+            content: url,
+            shadeClose: false, //开启遮罩关闭
+        });
+    }
+
+    // 测试一下
+    function runTestcase(testcaseId) {
+        var url = '/testcase/testresultPage/?testcaseId=' + testcaseId;
+        layer.open({
+            type: 2,
+            title: '测试结果',
+            maxmin: true,
+            area: ['800px', '600px'], //宽高
+            content: url,
+            shadeClose: true, //开启遮罩关闭
+        });
+    }
+
+    // 加载接口列表
+    function loadApilist() {
+        var system_alias = $('#projects').val();
+        var api_level = $('#apiLevel').val();
+        $.ajax({
+            type: 'get',
+            url: '/testcase/getApiList?systemAlias=' + system_alias + '&apiLevel=' + api_level,
+            success: function (result) {
+                $("#apiName").empty();
+                $("#apiName").append("<option value=''>所有接口</option>");
+                for (var i in result) {
+                    var api_name = result[i];
+                    $("#apiName").append("<option value='" + api_name + "'>" + api_name + "</option>");
+                }
+            }
+        });
+    }
+
+    // 自动生成测试用例
+    function generateTestcase() {
+        var system_alias = $('#projects').val();
+        if (system_alias != '') {
+            var url = '/testcase/generate/?runEnv=2&systemAlias=' + system_alias;
+            var loading = layer.load();
+            $.ajax({
+                type: 'get',
+                url: url,
+                dataType: 'json',
+                success: function (result) {
+                    if (result.code == 0) {
+                        layer.alert(result.message, {icon: 1});
+                    } else {
+                        layer.alert(result.message, {icon: 2});
+                    }
+                    layer.close(loading);
+                    reloadDatagrid();
+                }
+            });
+        } else {
+            layer.msg('请选择一个应用!')
+        }
+    }
+
+    // 创建测试计划
+    function createTestplan() {
+        var system_alias = $('#projects').val();
+        if (system_alias != '') {
+            var url = '/testcase/testplanCreate/?runEnv=2&systemAlias=' + system_alias;
+            var loading = layer.load();
+            $.ajax({
+                type: 'get',
+                url: url,
+                dataType: 'json',
+                success: function (result) {
+                    if (result.code == 0) {
+                        layer.alert(result.message, {icon: 1});
+                    } else {
+                        layer.alert(result.message, {icon: 2});
+                    }
+                    layer.close(loading);
+                }
+            });
+        } else {
+            layer.msg('请选择一个应用!')
+        }
+
+    }
+
+    // 删除测试用例
+    function removeTestcase(id) {
+        if (id) {
+            layer.confirm('确定要删除吗？', {
+                btn: ['确定', '取消'] //按钮
+            }, function () {
+                var url = '/testcase/removeTestcase/';
+                var loading = layer.load();
+                $.ajax({
+                    type: 'post',
+                    url: url,
+                    data: {
+                        "testcaseId": id,
+                    },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.code == 0) {
+                            layer.alert(result.message, {icon: 1});
+                        } else {
+                            layer.alert(result.message);
+                        }
+                        layer.close(loading);
+                        reloadDatagrid();
+                    }
+                });
+            }, function () {
+                layer.msg('用户取消了操作', {
+                    time: 3000
+                });
+            });
+
+        } else {
+            layer.msg('请选择一个测试用例!')
+        }
+    }
+
+    // 保存按钮操作
+    function saveTestcase() {
+        var form = $('#editFrom');
+        form.validate();
+        if (form.valid()) {
+            var params = {
+                "id": $('#id').val(),
+                "api_name": $('#api_name').val(),
+                "request_data": $('#request_data').val(),
+                "response_data": $('#response_data').val(),
+                "summary": $('#summary').val(),
+            };
+
+            $.ajax({
+                url: "/testcase/editTestcase/",
+                type: "post",
+                //contentType: "application/x-www-form-urlencoded",
+                dataType: "json",
+                data: params,
+                async: true,
+                beforeSend: function (xhr, setting) {
+                },
+                success: function (result) {
+                    reloadDatagrid();
+
+                    if (result.code == 0) {
+                        $('#detailDlg').modal('hide');
+                        layer.msg('保存成功.');
+                    } else {
+                        layer.alert(result.message, {icon: 2});
+                    }
+                },
+                error: function () {
+                    layer.alert('发生异常，请重试.', {icon: 2});
+                }
+            });
+        }
+    }
+
+    // 新增测试用例
+    function addTestcase() {
+        var system_alias = $('#projects').val();
+        var api_name = $('#apiName').val();
+        console.info(api_name);
+        if (system_alias != '') {
+            $('#detailDlg input').val('');
+            $('#detailDlg h4').html('新增测试用例');
+            $('#detailDlg textarea').removeAttr('readonly');
+            $('#summary').removeAttr('readonly');
+
+            $('#api_name').val(api_name);
+            $('#saveBtn').show();
+        } else {
+            layer.msg('请选择一个应用!')
+        }
+    }
+
+    // 是否启用字段显示
+    function formatEnabled(value, row, index) {
+        var str = '';
+        if (row.status !== 0) {
+            str = $.formatString('<span title="已启用" onclick="enableTestcase({0});" style="color:#428bca;"><i class="fa fa-toggle-on fa-lg"> </i></span>', row.id);
+        } else {
+            str = $.formatString('<span title="未启用" onclick="enableTestcase({0});"><i class="fa fa-toggle-off fa-lg"> </i></span>', row.id);
+        }
+
+        return str;
+    }
+
+    // 设置是否启用
+    function enableTestcase(id) {
+        var loading = layer.load(1);
+        $.ajax({
+            type: 'post',
+            url: '/testcase/enable/',
+            data: {
+                id: id,
+            },
+            success: function (result) {
+                layer.close(loading);
+                if (result.code == 0) {
+                    layer.msg(result.message);
+                    reloadDatagrid();
+                } else {
+                    layer.alert(result.message, {icon: 2});
+                }
+            }
+        });
+    }
+
+</script>
+
+</body>
+</html>

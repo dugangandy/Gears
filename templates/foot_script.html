@@ -1,0 +1,41 @@
+<!-- Mainly scripts -->
+<script src="/static/js/plugins/metisMenu/jquery.metisMenu.js?v=596f5abcac"></script>
+<script src="/static/js/plugins/slimscroll/jquery.slimscroll.min.js?v=4e233b0ef0"></script>
+<script src="/static/js/bootstrap-dialog.js?v=eccade682d"></script>
+<script src="/static/js/mindmup-editabletable.js?v=b379febad0"></script>
+<script src="/static/js/plugins/fullcalendar/moment.min.js?v=f16affba0b"></script>
+<script src="/static/js/plugins/fullcalendar/fullcalendar.min.js?v=f50faaad9b"></script>
+
+<!-- Custom and plugin javascript -->
+<script src="/static/js/inspinia.js?v=27b8f6d7c5"></script>
+<script src="/static/js/plugins/pace/pace.min.js?v=138fe1152c"></script>
+
+<!-- Peity -->
+<script src="/static/js/plugins/peity/jquery.peity.min.js?v=3b33a27368"></script>
+
+<!-- Peity -->
+<script src="/static/js/demo/peity-demo.js?v=cc037fb432"></script>
+
+<script src="/static/js/base.js?v=dd65dd2aac"></script>
+
+<!-- pop windows layer-->
+<script src="/static/js/layer/layer.js?v=8962f047ee"></script>
+
+<!-- highcharts -->
+<script src="/static/js/highcharts/highcharts.js?v=128552f46a"></script>
+
+
+<script src="/static/js/dropzone/dropzone.js?v=e395985c92"></script>
+<!-- active menu -->
+<script>
+    var url_array = document.location.pathname.split("/");
+    console.info(url_array);
+    s1 = url_array[1];
+    s2 = url_array[2];
+    if (s1 == ''){
+        $('#index').addClass('active')
+    } else {
+        $("#"+s1).addClass('active');
+        $('#'+s1+' .'+s2).addClass('active');
+    }
+</script>

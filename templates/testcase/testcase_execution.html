@@ -1,0 +1,409 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>测试执行</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=78e7f91c0c?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/plugins/bootstrap-table/bootstrap-table.min.css?v=8a861bfab9" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css?v=269550530c?v=4.4.0" rel="stylesheet">
+
+    <link href="/static/css/animate.min.css?v=393d1040f9" rel="stylesheet">
+    <link href="/static/css/style.css?v=45c8f40c86?v=4.1.0" rel="stylesheet"> <!-- style.min.css有问题：对话框无法在顶端显示 -->
+
+    <link href="/static/js/plugins/scrollUp/css/themes/image.css?v=a70fca85fd" rel="stylesheet">
+    <link rel="stylesheet" href="/static/module/jquery-ui-1.12.1/jquery-ui.min.css?v=0b5729a931">
+    <script type="text/javascript" src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- 应用指标查询 -->
+    <section id="realtime_errlog_list"></section>
+    <div class="row animated fadeInRight">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="col-sm-12" style="padding-left: 0px">
+                        <label>
+                            <select id="testplanId" class="form-control m-b" value="{{ testplanId }}"
+                                    onchange="reloadDatagrid();" style="width:450px;">
+                                <option selected value=''>请选择一个测试计划</option>
+                                {% for testplan in testplanList %}
+                                    <option value='{{ testplan.id }}'>{{ testplan.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+                        <label>
+                            <a href="javascript:window.location.reload();" style="margin-left:10px" id="btn_query"
+                               class="btn btn-info"><i class="fa fa-refresh"></i></a>
+                        </label>
+                        <label>
+                            <button onclick="reloadDatagrid();" style="margin-left:10px" id="btn_query"
+                                    class="btn btn-info"><i class="fa fa-search"></i> 查询
+                            </button>
+                        </label>
+                        <label>
+                            <button onclick="runTestplan('');" style="margin-left:10px" id="btn_execute"
+                                    class="btn btn-primary">开始执行
+                            </button>
+                        </label>
+                        <label>
+                            <button onclick="runTestplanSpecifyIp();" style="margin-left:10px" id="btn_execute_ip"
+                                    class="btn btn-primary">指定服务器执行
+                            </button>
+                        </label>
+                    </div>
+
+                    <table id="testcase_table" style="word-break:break-all;">
+                        <thead>
+                        <tr>
+                            <th data-field="api_name" data-width="30%">接口URL</th>
+                            <th data-field="status" data-width="8%" data-align="center">状态</th>
+                            <th data-field="result" data-width="8%" data-align="center" data-sortable="true"
+                                data-formatter="formatResult">执行结果 <i class="fa fa-sort"></i></th>
+                            {#                            <th data-field="diff" data-width="30%" data-align="left" data-formatter="formatParams">#}
+                            {#                                差异比较#}
+                            {#                            </th>#}
+                            <th data-field="status_code" data-width="5%" data-align="center"
+                                data-formatter="formatStatusCode">状态码
+                            </th>
+                            <th data-field="message" data-width="20%" data-align="left">
+                                报错信息
+                            </th>
+                            <th data-field="create_time" data-width="15%" data-align="center">创建时间</th>
+                            <th data-field="action" data-width="10%" data-align="center" data-formatter="showAction">
+                                操作
+                            </th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade in" id="detailDlg" tabindex="1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated fadeIn">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">测试执行结果详情</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editFrom" method="get" action="">
+                    <input type="hidden" id="id"/>
+                    <table class="table table-bordered table-condensed">
+                        <tr>
+                            <th width="100">接口名：</th>
+                            <td colspan="3">
+                                <input type="text" id="api_name" name="api_name" class="form-control" placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>服务器URL：</th>
+                            <td>
+                                <input type="text" id="server_ip" name="server_ip" class="form-control" placeholder="">
+                            </td>
+                            <th width="100">客户端IP：</th>
+                            <td>
+                                <input type="text" id="client_ip" name="client_ip" class="form-control" placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>执行人：</th>
+                            <td>
+                                <input type="text" id="updater" name="updater" class="form-control" placeholder="">
+                            </td>
+                            <th>执行时间：</th>
+                            <td>
+                                <input type="text" id="execute_time" name="execute_time" class="form-control"
+                                       placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>请求数据：</th>
+                            <td colspan="3">
+                                <textarea rows=4 id="request_data" name="request_data" class="form-control"
+                                          style="resize:none;"
+                                          placeholder="" maxlength="409600"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>预期结果：</th>
+                            <td>
+                                <textarea rows=6 id="expect_data" name="expect_data" class="form-control"
+                                          style="resize:none;"
+                                          placeholder="" maxlength="4096000"></textarea>
+                            </td>
+                            <th>实际结果：</th>
+                            <td>
+                                <textarea rows=6 id="response_data" name="response_data" class="form-control"
+                                          style="resize:none;"
+                                          placeholder="" maxlength="4096000"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>详细信息：</th>
+                            <td colspan="3">
+                                <textarea rows=5 id="message" name="message" class="form-control"
+                                          style="resize:none;" placeholder="该字段值为空" maxlength="4096"></textarea>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>差异对比结果：</th>
+                            <td colspan="3">
+                                <textarea rows=3 id="diff_data" name="diff_data" class="form-control"
+                                          style="resize:none;" placeholder="响应数据与预期值无差异或未执行"
+                                          maxlength="4096"></textarea>
+                            </td>
+                        </tr>
+
+                    </table>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/jquery.min.js?v=f9c7afd057?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=281cd50dd9?v=3.3.6"></script>
+<script src="/static/js/plugins/bootstrap-table/bootstrap-table.min.js?v=eeb5b97857"></script>
+<script src="/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js?v=c8f1530c22"></script>
+<script src="/static/js/plugins/scrollUp/jquery.scrollUp.min.js?v=63bbf26c1f"></script>
+<script type="text/javascript" src="/static/js/layer/layer.js?v=8962f047ee" charset="utf-8"></script>
+
+<script language="javascript" type="text/javascript">
+    var rowData = [];
+    var $testcase_table = $('#testcase_table');
+
+    $(function () {
+        layer.config({
+            extend: 'extend/layer.ext.js'
+        });
+
+        // 回到顶部链接
+        $.scrollUp({
+            animation: 'fade',
+            scrollDistance: '0',
+            activeOverlay: '#00FFFF',
+            scrollImg: {
+                active: true,
+                type: 'background',
+                src: '/static/js/plugins/scrollUp/img/top.png'
+            }
+        });
+
+        $('#testplanId').val({{ testplanId }});
+
+        setTimeout("init_table()", 500);
+    })
+
+
+    function init_table() {
+        $testcase_table.bootstrapTable({
+            url: '/testcase/executionDatagrid/',
+            striped: true,
+            sortable: true,
+            sortName: 'create_time',
+            sortOrder: 'desc',
+            silentSort: false,
+            pagination: true,
+            pageSize: 10,
+            sidePagination: "server", //表示服务端请求
+            queryParamsType: "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    searchText: params.searchText,
+                    sortName: params.sortName,
+                    sortOrder: params.sortOrder,
+                    testplanId: $('#testplanId').val(),
+                };
+                return param;
+            },
+        });
+    }
+
+    // 加载数据表格
+    function reloadDatagrid() {
+        var tableOptions = $testcase_table.bootstrapTable('getOptions');
+        $testcase_table.bootstrapTable('showLoading');
+        $.ajax({
+            type: 'post',
+            url: '/testcase/executionDatagrid/',
+            data: {
+                pageNumber: tableOptions.pageNumber,
+                pageSize: tableOptions.pageSize,
+                testplanId: $('#testplanId').val(),
+                sortName: tableOptions.sortName,
+                sortOrder: tableOptions.sortOrder,
+            },
+            success: function (result) {
+                $testcase_table.bootstrapTable('load', result);
+                $testcase_table.bootstrapTable('hideLoading');
+            }
+        });
+    }
+
+    function formatParams(value, row, index) {
+        if (value.length > 256) {
+            return '<span class="label label-info">数据超长，请在详情页查看</span>';
+        } else {
+            return value;
+        }
+    }
+
+    // 格式化输出执行结果
+    function formatResult(value, row, index) {
+        var str = '';
+        if (value == 'success') {
+            str = '<span class="btn btn-xs btn-success">成功</span>';
+        } else if (value == 'fail') {
+            str = '<span class="btn btn-xs btn-danger">失败</span>';
+        } else {
+            str = value;
+        }
+        return str;
+    }
+
+    // 格式化输出状态吗
+    function formatStatusCode(value, row, index) {
+        var str = '';
+        if (value == '200') {
+            str = '<span class="btn btn-xs btn-info">200</span>';
+        } else if (value) {
+            str = '<span class="btn btn-xs btn-danger">' + value + '</span>';
+        } else {
+            str = value;
+        }
+        return str;
+    }
+
+    // 格式化操作按钮
+    function showAction(value, row, index) {
+        rowData[index] = row;
+        var str = ''
+        var viewBtn = '<button type="button" class="btn btn-outline btn-primary btn-xs" data-toggle="modal" data-target="#detailDlg" onclick="showDetail(' + index + ')"><i class="fa fa-table" aria-hidden="true"> </i></button>';
+        var execBtn = '<button type="button" title="执行测试用例" class="btn btn-outline btn-danger btn-xs" onclick="runTestcase(' + row.id + ')"><i class="fa fa-flash" aria-hidden="true">  </i> </button>';
+        str += viewBtn + '&nbsp;' + execBtn;
+        return str;
+    }
+
+    function showDetail(index) {
+        var row = rowData[index];
+        $('#server_ip').val(row.server_ip);
+        $('#execute_time').val(row.execute_time);
+        $('#api_name').val(row.api_name);
+//        $('#status_code').val(row.status_code);
+        $('#updater').val(row.updater);
+        $('#client_ip').val(row.client_ip);
+        $('#message').val(row.message);
+        try {
+            $('#request_data').val($.trim(formatJson(row.request_data)));
+        } catch (err) {
+            $('#request_data').val(row.request_data);
+        }
+
+        try {
+            $('#response_data').val($.trim(formatJson(row.response_data)));
+        } catch (err) {
+            console.error(err);
+            $('#response_data').val(row.response_data);
+        }
+        try {
+            $('#expect_data').val($.trim(formatJson(row.expect_response_data)));
+        } catch(err) {
+            $('#expect_data').val(row.expect_response_data);
+        }
+
+        try {
+            $('#diff_data').val($.trim(formatJson(row.diff)));
+        } catch (err) {
+            console.error(err);
+            $('#diff_data').val(row.diff);
+        }
+    }
+
+    // 指定ip执行测试计划
+    function runTestplanSpecifyIp() {
+        layer.prompt({title: '请输入服务器IP', value: '127.0.0.1'},
+            function (value, index) {
+                runTestplan(value);
+            });
+    }
+
+    // 执行测试计划
+    function runTestplan(serverIp) {
+        var testplanId = $('#testplanId').val();
+        if (testplanId != '') {
+            var loading = layer.load();
+            var url = '/testcase/testplanExecute/';
+            $.ajax({
+                type: 'post',
+                url: url,
+                data: {
+                    "testplanId": testplanId,
+                    "serverIp": serverIp,
+                },
+                success: function (result) {
+                    if (result.code == 0) {
+                        layer.msg(result.message);
+                    } else {
+                        layer.alert(result.message, {icon: 2});
+                    }
+
+                    reloadDatagrid();
+                    layer.close(loading);
+                }
+            });
+        } else {
+            layer.alert('请选择一个测试计划!', {icon: 0});
+        }
+    }
+
+    // 弹层打开页面
+    function open_url(url) {
+        var index = layer.open({
+            type: 2,
+            title: '调用链',
+            area: ['800px', '400px'], //宽高
+            content: url,
+            shadeClose: true, //开启遮罩关闭
+        });
+        //layer.full(index);
+    }
+
+    // 执行测试用例
+    function runTestcase(executionId) {
+        if (executionId != '') {
+            var loading = layer.load();
+            var url = '/testcase/runTestcase/';
+            $.ajax({
+                type: 'post',
+                url: url,
+                data: {
+                    "executionId": executionId,
+                },
+                success: function (result) {
+                    layer.msg(result.message);
+                    reloadDatagrid();
+                    layer.close(loading);
+                }
+            });
+        } else {
+            layer.alert('请选择一个测试用例!', {icon: 0});
+        }
+    }
+</script>
+
+</body>
+</html>

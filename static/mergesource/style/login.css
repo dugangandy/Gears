@@ -1,0 +1,125 @@
+@charset "utf-8";
+html, body, p, input, select {
+	padding: 0;
+	margin: 0;
+}
+
+body {
+	font: 12px "Helvetica Neue",Helvetica,Tahoma,Arial,sans-serif;
+	color: #000;
+	background-color: #F0F0F0;
+}
+
+img {
+	border: 0px;
+}
+
+.login_logo_bg {
+	background: url('images/atms_icons/company_logo.gif') no-repeat;
+	background-position: center;
+	background-color: #ffffff;
+}
+
+.login_bg1 {
+	background: url('images/atms_icons/login_bg1.png') no-repeat;
+	background-position: right;
+	background-color: #ffffff;
+}
+
+.atms_table {
+	width: 95%;
+	margin: auto;
+}
+
+.atms_table th {
+    width:120px;
+    text-align:right;
+    padding-right:10px;
+    font-family:"微软雅黑";
+    font-size:15px;
+    color:#666;
+}
+
+.atms_table td {
+	padding: 8px;
+	line-height: 8px;
+	text-align: left;
+	vertical-align: middle;
+	font-family:"微软雅黑";
+    font-size:14px;
+}
+
+.atms_table th input,.atms_table td input {
+	width: 200px;
+	height: 20px;
+}
+
+.clearfix {
+	zoom: 1;
+}
+.clearfix:after {
+	content: "";
+	display: block;
+	height: 0;
+	line-height: 0;
+	clear: both;
+	visibility: hidden;
+}
+.container {
+	width: 610px;
+	overflow: hidden;
+	position: absolute;
+	top: 50%;
+	left: 30%;
+	margin: -175px 0 0 -300px;
+}
+.top_bg {
+	background: url(./images/login1.gif) no-repeat;
+	width: 610px;
+	height: 92px;
+}
+.center_bg {
+	background: url(./images/login2.gif) no-repeat;
+	width: 610px;
+	height: 92px;
+}
+.main {
+	background: url(./images/login3.gif) no-repeat;
+	width: 570px;
+	height: 108px;
+	padding-left: 40px;
+}
+.main p {
+	margin-bottom: 3px;
+}
+.main label {
+	width: 60px;
+	text-align: center;
+	display: inline-block;
+}
+.main .ipt {
+	height: 22px;
+	line-height: 22px;
+	border: 1px solid #7F9DB9;
+	width: 150px;
+}
+.main select {
+	width: 152px;
+	height: 22px;
+	line-height: 22px;
+}
+
+
+.bottom_bg {
+	background: url(./images/login4.gif) no-repeat;
+	width: 610px;
+	height: 54px;
+}
+.tips {
+	margin-left: 12px;
+	height: 10px;
+	line-height: 10px;
+	color: #ff0000;
+}
+
+

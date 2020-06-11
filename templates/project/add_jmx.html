@@ -1,0 +1,532 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+         .modal-dialog1 {
+        width:800px;
+        margin: 30px auto
+        }
+        .colStyle span{
+            display:inline-block;
+            width:300px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+    </style>
+    <title>数据银行脚本详情</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=78e7f91c0c?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/plugins/bootstrap-table/bootstrap-table.min.css?v=8a861bfab9" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css?v=269550530c?v=4.4.0" rel="stylesheet">
+
+    <link href="/static/css/animate.min.css?v=393d1040f9" rel="stylesheet">
+    <link href="/static/css/style.css?v=45c8f40c86?v=4.1.0" rel="stylesheet"> <!-- style.min.css有问题：对话框无法在顶端显示 -->
+
+    <link href="/static/js/plugins/scrollUp/css/themes/image.css?v=a70fca85fd" rel="stylesheet">
+    <link rel="stylesheet" href="/static/module/jquery-ui-1.12.1/jquery-ui.min.css?v=0b5729a931">
+    <script type="text/javascript" src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+</head>
+
+<body class="gray-bg">
+
+
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- 应用列表查询 -->
+
+    <section id="realtime_errlog_list"></section>
+    <div class="row animated fadeInRight">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <h2 class="modal-title">数据脚本详情</h2>
+
+                    <div class="col-sm-12" style="padding-left: 0px">
+                        {#                        <input type="hidden" id="projects" value="{{ systemAlias }}"/>#}
+
+                        <div class="modal-body">
+
+                            <table id = "data_table" class="table table-bordered table-condensed" style="word-break:break-all;">
+                                <tr>
+                                    <th width="10%">脚本名称：</th>
+                                    <td colspan="3">
+                                        <input type="text" id="script_id" name="script_id" class="form-control" readonly="readonly"
+                                               placeholder="" value = "{{ datascript_id }}">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>业务场景：</th>
+                                    <td colspan="3">
+                                        <input type="text" id="script_bu" name="script_bu" class="form-control"
+                                                placeholder="" required>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>业务线：</th>
+                                    <td>
+                                         <select id="buName" class="form-control m-b"
+                                                    onchange="reloadalians();" style="width:150px;">
+                                                <option selected value=''>所有业务线</option>
+                                         </select>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th width="10%">用例列表：</th>
+                                    <td>
+
+                                        <label>
+                                            <select id="t_alians" class="form-control m-b"
+                                                    onchange="reloadApi();" style="width:300px;">
+                                                <option selected value=''>所有应用</option>
+                                            </select>
+                                        </label>
+                                        <label>
+                                            <select id="t_api" class="form-control m-b"
+                                                    onchange="reloadTestcase();" style="width:300px;">
+                                                <option selected value=''>所有接口</option>
+                                            </select>
+                                        </label>
+                                        <label>
+                                            <select id="t_testcase" class="form-control m-b"
+                                                     style="width:300px;" onchange="btn_add_show()">
+                                                <option selected value=''>所有用例</option>
+                                            </select>
+                                        </label>
+
+                                        <label>
+                                            <button onclick="addRow();"  style="margin-left:10px" id="btn_add"
+                                                    class="btn btn-info"><i class="fa fa-caret-square-o-down"></i> 添加
+                                            </button>
+                                        </label>
+                                        <table id="project_table" style="word-break:break-all;">
+                                            <thead>
+                                                <tr>
+                                                    <input type="hidden" id="testcase_id"/>
+                                                    <input type="hidden" data-field="case_response_data" id="res_data"/>
+                                                    <input type="hidden" data-field="case_request_data" id="req_data"/>
+                                                    <th data-field="alians" data-width="15%">应用名</th>
+                                                    <th data-field="api_name" data-width="15%" data-align="center">接口名</th>
+                                                    <th data-field="summary" data-width="15%" data-align="left">用例描述</th>
+                                                    <th data-field="dept_name" data-width="10%" data-align="center" >业务线</th>
+                                                    <th data-field="action" data-width="20%" data-align="center" data-formatter="showAction">操作</th>
+                                                </tr>
+                                            </thead>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                    </div>
+
+                    </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-white" onclick="window.close()" data-dismiss="modal">关闭</button>
+                            <button id="saveBtn" type="submit" class="btn btn-primary" onclick="saveDatascript()">保存</button>
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade in" id="detailDlg" tabindex="1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content animated fadeIn">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">测试用例详情</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editFrom" method="get" action="">
+                    <input type="hidden" id="case_testcase_id"/>
+                    <table class="table table-bordered table-condensed">
+                        <tr>
+                            <th width="10%">用例摘要：</th>
+                            <td colspan="3">
+                                <input type="text" id="case_summary" name="case_summary" class="form-control" readonly="readonly"
+                                       placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>接口名：</th>
+                            <td colspan="3">
+                                <input type="text" id="case_api_name" name="case_summary" class="form-control"
+                                       readonly="readonly" placeholder="" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>请求数据：</th>
+                            <td>
+                                <textarea rows=10 id="case_request_data" name="case_request_data" class="form-control"
+                                          style="resize:none;" readonly="readonly" placeholder=""
+                                          maxlength="409600"></textarea>
+                            </td>
+                            <th width="10%">响应数据（预期）：</th>
+                            <td>
+                                <textarea rows=10 id="case_response_data" name="case_response_data" class="form-control"
+                                          style="resize:none;" readonly="readonly" placeholder=""
+                                          maxlength="4096000" required></textarea>
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button id="case_saveBtn" type="submit" class="btn btn-primary" onclick="saveTestcase()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+<script src="/static/js/jquery.min.js?v=f9c7afd057?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=281cd50dd9?v=3.3.6"></script>
+<script src="/static/js/plugins/bootstrap-table/bootstrap-table.min.js?v=eeb5b97857"></script>
+<script src="/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js?v=c8f1530c22"></script>
+<script src="/static/js/plugins/validate/jquery.validate.min.js?v=346e6b069a"></script>
+<script src="/static/js/plugins/validate/messages_zh.js?v=6af228ebea"></script>
+<script src="/static/js/plugins/scrollUp/jquery.scrollUp.min.js?v=63bbf26c1f"></script>
+<script src="/static/module/jquery-ui-1.12.1/jquery-ui.min.js?v=c15b1008de"></script>
+<script src="/static/js/jquery.cookie.js?v=20a0023596"></script>
+<script type="text/javascript" src="/static/js/extJquery.js?v=f1c0f8651b" charset="utf-8"></script>
+<script type="text/javascript" src="/static/js/layer/layer.js?v=8962f047ee?version=20180525" charset="utf-8"></script>
+
+<script language="javascript" type="text/javascript">
+    var rowData = [];
+    var $project_table = $('#project_table');
+
+    function sleep(numberMillis) {
+        var exitTime = now.getTime() + numberMillis;
+        while (true) {
+            now = new Date();
+            if (now.getTime() > exitTime)
+            return;
+        }
+}
+
+    $(function () {
+        // 回到顶部链接
+        $.scrollUp({
+            animation: 'fade',
+            scrollDistance: '0',
+            activeOverlay: '#00FFFF',
+            scrollImg: {
+                active: true,
+                type: 'background',
+                src: '/static/js/plugins/scrollUp/img/top.png'
+            }
+        });
+        $("#btn_add").attr("disabled", true);
+        var auto_run = 0;
+        $('#auto_exc').click(function () {
+            if ($('#auto_exc').is(':checked')){
+                $('#cron').removeAttr('readonly');
+                var auto_run = 0;
+            }
+            else{
+                 $('#cron').attr('readonly', 'readonly');
+                 var auto_run = 1;
+            }
+
+        });
+        // 加载业务线
+        $.ajax({
+            type: 'get',
+            url: '/cmdb/productlines',
+            success: function (result) {
+                var rows = result['rows'];
+                for (var i in rows) {
+                    var buName = rows[i].bu_name;
+                    $("#buName").append("<option value='" + buName + "'>" + buName + "</option>");
+                }
+            }
+        });
+        setTimeout("init_data()", 100);
+
+        setTimeout("init_table()", 100);
+        {#loadApilist();#}
+    });
+
+
+    // 格式化操作按钮
+    function showAction(value, row, index) {
+        rowData[index] = row;
+        var editBtn = '<button title="修改" type="button" class="btn btn-outline btn-warning btn-xs" data-toggle="modal" data-target="#detailDlg" onclick="editFun(' + index + ')">编辑</button>';
+        var viewBtn = '<button title="删除" type="button" class="btn btn-outline btn-danger btn-xs"  onclick="deleteRow(' + row.testcase_id + ')">删除</button>';
+
+        return editBtn + '&nbsp;&nbsp;' + viewBtn + '&nbsp;&nbsp;';
+    }
+        // 查看用例详情
+    function showDetail(index) {
+        $('#case_saveBtn').hide();
+        $('#detailDlg textarea').attr('readonly', 'readonly');
+        $('#case_summary').attr('readonly', 'readonly');
+        $('#detailDlg h4').html('测试用例详情');
+
+        var row = rowData[index];
+        $('#case_testcase_id').val(row.testcase_id);
+        try {
+            $('#case_request_data').val($.trim(formatJson(row.case_request_data)));
+            $('#case_response_data').val($.trim(formatJson(row.case_response_data)));
+        } catch (err) {
+            console.error(err);
+            $('#case_request_data').val(row.case_request_data);
+            $('#case_response_data').val(row.case_response_data);
+        }
+         $.ajax({
+            type: 'post',
+            url: '/testcase/getTestcase/',
+            data: {
+                testcase_id: $('#case_testcase_id').val(),
+            },
+            success: function (result) {
+                $('#case_summary').val(result.summary);
+                $('#case_api_name').val(result.api_name);
+                $('#case_request_data').val($.trim(formatJson(result.request_data)));
+                $('#case_response_data').val($.trim(formatJson(result.expect_response_data)));
+            }
+        });
+    }
+    function editFun(index) {
+        showDetail(index);
+        $('#detailDlg h4').html('编辑测试用例');
+        $('#detailDlg textarea').removeAttr('readonly');
+        $('#case_summary').removeAttr('readonly');
+        $('#case_saveBtn').show();
+    }
+    // 保存按钮操作
+    function saveTestcase() {
+        var form = $('#editFrom');
+        form.validate();
+        if (form.valid()) {
+            var params = {
+                "id": $('#case_testcase_id').val(),
+                "api_name": $('#case_api_name').val(),
+                "request_data": $('#case_request_data').val(),
+                "response_data": $('#case_response_data').val(),
+                "summary": $('#case_summary').val(),
+            };
+
+            $.ajax({
+                url: "/testcase/editTestcase/",
+                type: "post",
+                //contentType: "application/x-www-form-urlencoded",
+                dataType: "json",
+                data: params,
+                async: true,
+                beforeSend: function (xhr, setting) {
+                },
+                success: function (result) {
+
+                    if (result.code == 0) {
+                        $('#detailDlg').modal('hide');
+                        layer.msg('保存成功.');
+
+                    } else {
+                        layer.alert(result.message, {icon: 2});
+                    }
+                },
+                error: function () {
+                    layer.alert('发生异常，请重试.', {icon: 2});
+                }
+            });
+        }
+    }
+    function paramsMatter(value, row, index) {
+    var values = row.run_data;//获取当前字段的值
+    //替换空格，因为字符串拼接的时候如果遇到空格，会自动将后面的部分截掉，所有这里用html的转义符
+    // 代替
+    values = values.replace(/\s+/g,' ')
+    return "<span title="+values+">"+row.run_data+"</span>"
+}
+    // 初始化基础数据
+    function init_data() {
+        $.ajax({
+
+            type: 'post',
+            url: '/testcase/get_script_data/',
+            data: {
+
+                Sid: $('#script_id').val(),
+            },
+            success: function (result) {
+                $('#script_bu').val(result['script_bu']);
+                $('#buName').val(result['dept_name']);
+
+            }
+        });
+    }
+    // 初始化表格
+    function init_table() {
+        $project_table.bootstrapTable({
+            uniqueId:'testcase_id',
+            url: '/testcase/get_script_testcase/',
+            striped: true,
+            sortable: true,
+            sortName: 'last_runtime',
+            sortOrder: 'desc',
+            silentSort: false,
+            pagination: true,
+            pageSize: 15,
+            sidePagination: "server", //表示服务端请求
+            queryParamsType: "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    datascript_id: $('#script_id').val(),
+                };
+                return param;
+            },
+        });
+    }
+    function reloadCasegrid() {
+        var tableOptions = $project_table.bootstrapTable('getOptions');
+        $project_table.bootstrapTable('showLoading');
+        $.ajax({
+            type: 'post',
+            url: '/testcase/get_script_testcase/',
+            data: {
+
+                datascript_id: $('#script_id').val(),
+            },
+            success: function (result) {
+                $project_table.bootstrapTable('load', result);
+                $project_table.bootstrapTable('hideLoading');
+            }
+        });
+    }
+    // 表格增加一行
+    function addRow(){
+        var count = $('#project_table').bootstrapTable('getData').length;
+        var index=document.getElementById("t_testcase").selectedIndex;
+    // newFlag == 1的数据为新规的数据
+        $('#project_table').bootstrapTable('insertRow',{
+            index:count,row:{
+                testcase_id:$('#t_testcase').val(),
+                alians:$('#t_alians').val(),
+                api_name:$('#t_api').val(),
+                summary:document.getElementById("t_testcase").options[index].text,
+                dept_name:$('#buName').val()}
+        });
+}
+    // 表格删除一行
+    function deleteRow(testcase_id) {
+
+        $('#project_table').bootstrapTable('removeByUniqueId',testcase_id)
+
+    }
+    function reloadalians() {
+        $.ajax({
+            type: 'get',
+            url: '/testcase/get_alians/',
+            data: {
+                buName: $('#buName').val(),
+            },
+            success: function (result) {
+                $("#t_alians").empty();
+                $("#t_alians").append("<option value=''>所有应用</option>");
+                var rows = result['rows'];
+                for (var i in rows) {
+                    var alians = rows[i].project_name;
+                    $("#t_alians").append("<option value='" + alians + "'>" + alians + "</option>");
+                }
+            }
+        });
+    }
+
+    function reloadApi() {
+        var system_alias = $('#t_alians').val();
+        var api_level = '';
+        $.ajax({
+            type: 'get',
+            url: '/testcase/getApiList?systemAlias=' + system_alias + '&apiLevel=' + api_level,
+            success: function (result) {
+                $("#t_api").empty();
+                $("#t_api").append("<option value=''>所有接口</option>");
+                for (var i in result) {
+                    var api_name = result[i];
+                    $("#t_api").append("<option value='" + api_name + "'>" + api_name + "</option>");
+                }
+            }
+        });
+    }
+
+     function reloadTestcase() {
+        var system_alias = $('#t_alians').val();
+        var api_name  = $('#t_api').val();
+        $.ajax({
+            type: 'get',
+            url: '/testcase/getTestcaseList?apiName=' + api_name,
+            success: function (result) {
+                $("#t_testcase").empty();
+                $("#t_testcase").append("<option value=''>所有用例</option>");
+                for (var i in result) {
+                    var testcase_id = result[i]['testcase_id']
+                    var testcase_summary =result[i]['testcase_summary'];
+                    $("#t_testcase").append("<option value='" + testcase_id + "'>" + testcase_summary + "</option>");
+                }
+            }
+        });
+    }
+
+    function btn_add_show() {
+        $("#btn_add").removeAttr("disabled");
+    }
+
+    function saveDatascript(){
+        var api_list = [];
+        var allTableData = $('#project_table').bootstrapTable('getData');//获取表格的所有内容行
+        for( var i=0;i<allTableData.length;i++)
+        {
+            api_list.push(allTableData[i].testcase_id)
+
+        }
+
+        var params = {
+                "script_id": $('#script_id').val(),
+                "dept_name": $('#buName').val(),
+                "script_bu": $('#script_bu').val(),
+                "api_list": JSON.stringify(api_list),
+            };
+
+            $.ajax({
+                url: "/testcase/script_edit/",
+                type: "post",
+                //contentType: "application/x-www-form-urlencoded",
+                dataType: "json",
+                data: params,
+                async: true,
+                beforeSend: function (xhr, setting) {
+                },
+                success: function (result) {
+
+                    if (result.code == 0) {
+                        $('#detailDlg').modal('hide');
+                        layer.msg('保存成功.');
+                    } else {
+                        layer.alert(result.message, {icon: 2});
+                    }
+                },
+                error: function () {
+                    layer.alert('发生异常，请重试.', {icon: 2});
+                }
+            });
+
+    }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,263 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>后台管理页面</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=78e7f91c0c" rel="stylesheet">
+    <link href="/static/css/plugins/bootstrap-table/bootstrap-table.min.css?v=8a861bfab9" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css?v=269550530c?v=4.4.0" rel="stylesheet">
+
+    <link href="/static/css/animate.min.css?v=393d1040f9" rel="stylesheet">
+    <link href="/static/css/style.css?v=45c8f40c86" rel="stylesheet"> <!-- style.min.css有问题：对话框无法在顶端显示 -->
+
+    <link href="/static/js/plugins/scrollUp/css/themes/image.css?v=a70fca85fd" rel="stylesheet">
+    <link rel="stylesheet" href="/static/module/jquery-ui-1.12.1/jquery-ui.min.css?v=0b5729a931">
+    <script type="text/javascript" src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+</head>
+
+<style type="text/css">
+    h2 a {
+        text-decoration: underline;
+    }
+
+    table td {
+    / / text-decoration: underline;
+        font-size: 110%;
+        line-height: 120%;
+    }
+
+    table a {
+        text-decoration: underline;
+    }
+
+    .pagination {
+        margin: 4px 0;
+    }
+
+    .pagination ul {
+        margin-top: 0px;
+    }
+
+    .pagination ul > li > a, .pagination ul > li > span {
+        padding: 3px 10px;
+    }
+
+    .ui-autocomplete {
+        max-height: 500px;
+        overflow-y: auto;
+        /* 防止水平滚动条 */
+        overflow-x: hidden;
+    }
+</style>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- 应用指标查询 -->
+    <section id="realtime_errlog_list"></section>
+    <div class="row animated fadeInRight">
+        <div class="col-sm-12">
+            <div class="col-sm-12" style="padding-left: 0px">
+                <label>
+                    <a href="/" target="_blank" style="margin-left:10px" id="btn_query"
+                            class="btn btn-info"><i class="fa fa-home"></i> 平台首页
+                    </a>
+                </label>
+            </div>
+
+            <div class="col-sm-12" style="padding-left: 10px">
+                <label>
+                    <input id="projects" class="form-control m-b" value="{{ systemAlias }}"placeholder="请输入项目名称" style="width:200px; ">
+                </label>
+                <label>
+                    <input id="runEnv" class="form-control m-b" value="{{ runEnv }}" placeholder="请输入运行环境" style="width:120px; ">
+                </label>
+                <label>
+                    <input id="topic" class="form-control m-b" value="{{ topic }}" placeholder="请输入接口topic" style="width:500px; ">
+                </label>
+                <label>
+                    <button onclick="reloadPage();" style="margin-left:10px" id="btn_query"
+                            class="btn btn-primary">查询
+                    </button>
+                </label>
+            </div>
+            <div class="col-sm-12" style="padding-left: 0px">
+                <label>
+                    接口列表:
+                </label>
+                <label>
+                    <button onclick="getApiList();" style="margin-left:10px" id="btn_query"
+                            class="btn btn-primary">查看接口列表
+                    </button>
+                </label>
+                <label>
+                    <button onclick="syncApiList();" style="margin-left:10px" id="btn_query"
+                            class="btn btn-warning">同步接口数据
+                    </button>
+                </label>
+            </div>
+            <div class="col-sm-12" style="padding-left: 0px">
+                <label>
+                    接口参数:
+                </label>
+                <label>
+                    <button onclick="getApiParams();" style="margin-left:10px" id="btn_query"
+                            class="btn btn-primary">查看接口参数
+                    </button>
+                </label>
+                <label>
+                    <button onclick="syncApiParams();" style="margin-left:10px" id="btn_query"
+                            class="btn btn-warning">同步接口参数
+                    </button>
+                </label>
+            </div>
+            <div class="col-sm-12" style="padding-left: 0px">
+                <label>
+                    测试用例:
+                </label>
+                <label>
+                    <button onclick="createTestcase();" style="margin-left:10px" id="btn_query"
+                            class="btn btn-warning">生成测试用例
+                    </button>
+                </label>
+            </div>
+            <div class="col-sm-12" style="padding-left: 0px">
+                <label>
+                    测试计划:
+                </label>
+                <label>
+                    <button onclick="createTestplan();" style="margin-left:10px" id="btn_query"
+                            class="btn btn-warning">生成测试计划
+                    </button>
+                </label>
+                <label>
+                    <button onclick="runTestplan();" style="margin-left:10px" id="btn_query"
+                            class="btn btn-primary">执行测试计划
+                    </button>
+                </label>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/jquery.min.js?v=f9c7afd057?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=281cd50dd9?v=3.3.6"></script>
+
+<script src="/static/module/jquery-ui-1.12.1/jquery-ui.min.js?v=c15b1008de"></script>
+<script type="text/javascript" src="/static/js/layer/layer.js?v=8962f047ee" charset="utf-8"></script>
+
+<script language="javascript" type="text/javascript">
+    var appName = '{{ systemAlias }}';
+    var testplanId = -1;
+
+    $(function () {
+         // 项目名称下拉框
+        $.ajax({
+            type: 'post',
+            url: '/data/get_all_projects',
+            data: {},
+            dataType: 'json',
+            success: function (result) {
+                var projectList = new Array();
+                for (var i in result) {
+                    var app_name = result[i].text;
+                    projectList.push(app_name);
+                }
+
+                // 初始化项目名称下拉框
+                $('#projects').autocomplete({
+                    source: projectList,
+                    autoFocus: true,
+                    delay: 300,
+                });
+                $("#projects").val(appName);
+            }
+        });
+
+    })
+
+    function reloadPage() {
+        var url = '/testcase/adminPage/?systemAlias=' + $('#projects').val() + '&runEnv=' + $('#runEnv').val()
+        + '&topic=' + $('#topic').val();
+        window.location.href = url;
+    }
+
+    // 获取接口列表
+    function getApiList() {
+        var url = '/data/get_api_list/?systemAlias=' + $('#projects').val() + '&runEnv=' + $('#runEnv').val();
+        open_url(url);
+    }
+
+    // 同步接口列表
+    function syncApiList() {
+        var url = '/data/sync/api_list/?systemAlias=' + $('#projects').val() + '&runEnv=' + $('#runEnv').val();
+        open_url(url);
+    }
+
+    // 获取接口参数
+    function getApiParams() {
+        var url = '/data/get_api_params/?systemAlias=' + $('#projects').val() + '&runEnv=' + $('#runEnv').val()
+        + '&topic=' + $('#topic').val();
+        open_url(url);
+    }
+
+    // 同步接口参数
+    function syncApiParams() {
+        var url = '/data/sync/api_params/?systemAlias=' + $('#projects').val() + '&runEnv=' + $('#runEnv').val()
+        + '&topic=' + $('#topic').val();
+        open_url(url);
+    }
+
+    // 自动创建测试用例
+    function createTestcase() {
+        var url = '/testcase/generate/?systemAlias=' + $('#projects').val() + '&runEnv=' + $('#runEnv').val();
+        open_url(url);
+    }
+
+    // 自动创建测试计划
+    function createTestplan() {
+        var url = '/testcase/testplanCreate/?systemAlias=' + $('#projects').val() + '&runEnv=' + $('#runEnv').val();
+        $.ajax({
+            type: 'get',
+            url: url,
+            dataType: 'json',
+            success: function (result) {
+                testplanId = result.testplan_id;
+                layer.msg("测试计划id： " + testplanId);
+            }
+        });
+    }
+
+    // 执行测试计划
+    function runTestplan() {
+        if (testplanId > 0) {
+            var url = '/data/testplan/run/?testplanId=' + testplanId;
+            open_url(url);
+        } else {
+            layer.msg('请先创建测试计划，然后再执行.');
+        }
+    }
+
+    // 弹层打开页面
+    function open_url(url) {
+        layer.open({
+            type: 2,
+            title: '执行结果',
+            skin: 'layui-layer-lan', //加上边框
+            area: ['800px', '400px'], //宽高
+            content: url,
+            shadeClose: true, //开启遮罩关闭
+        });
+    }
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,395 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>接口管理</title>
+    <link rel="shortcut icon" href="/favicon.ico">
+    <link href="/static/css/bootstrap.min.css?v=78e7f91c0c?v=3.3.6" rel="stylesheet">
+    <link href="/static/css/plugins/bootstrap-table/bootstrap-table.min.css?v=8a861bfab9" rel="stylesheet">
+    <link href="/static/font-awesome/css/font-awesome.min.css?v=269550530c?v=4.4.0" rel="stylesheet">
+
+    <link href="/static/css/animate.min.css?v=393d1040f9" rel="stylesheet">
+    <link href="/static/css/style.css?v=45c8f40c86?v=4.1.0" rel="stylesheet"> <!-- style.min.css有问题：对话框无法在顶端显示 -->
+
+    <link href="/static/js/plugins/scrollUp/css/themes/image.css?v=a70fca85fd" rel="stylesheet">
+    <link rel="stylesheet" href="/static/module/jquery-ui-1.12.1/jquery-ui.min.css?v=0b5729a931">
+    <script type="text/javascript" src="/static/js/common.js?v=21dd70c21f" charset="utf-8"></script>
+</head>
+
+<body class="gray-bg">
+<div class="wrapper wrapper-content animated fadeInRight">
+    <!-- 接口管理页面 -->
+    <section id="realtime_errlog_list"></section>
+    <div class="row animated fadeInRight">
+        <div class="col-sm-12">
+            <div class="ibox float-e-margins">
+                <div class="ibox-content">
+                    <div class="col-sm-12" style="padding-left: 0px">
+                        <input type="hidden" id="projects" value="{{ systemAlias }}"/>
+{#                        <label>#}
+{#                            <select id="projects" class="form-control m-b" value="{{ systemAlias }}"#}
+{#                                    onchange="reloadDatagrid();" style="width:280px;">#}
+{#                                <option selected value=''>所有应用</option>#}
+{#                            </select>#}
+{#                        </label>#}
+                        <label>
+                            <select id="apiLevel" class="form-control m-b" value="{{ apiLevel }}"
+                                    onchange="reloadDatagrid();" style="width:120px;">
+                                <option value=''>所有级别</option>
+                                <option value='P1'>P1</option>
+                                <option value='P2'>P2</option>
+                                <option value='P3'>P3</option>
+                                <option value='P4'>P4</option>
+                            </select>
+                        </label>
+                        <label>
+                            <input id="apiName" class="form-control m-b" value="" placeholder="支持接口名模糊搜索"
+                                   style="width:200px;"/>
+                        </label>
+
+                        <label>
+                            <button onclick="reloadDatagrid();" style="margin-left:10px" id="btn_query"
+                                    class="btn btn-info"><i class="fa fa-search"></i> 查询
+                            </button>
+                        </label>
+                        <label>
+                            <button onclick="addFun();" data-toggle="modal" data-target="#detailDlg"
+                                    style="margin-left:10px" id="btn_add" class="btn btn-primary">新增接口
+                            </button>
+                        </label>
+                    </div>
+
+                    <table id="api_table" style="word-break:break-all;">
+                        <thead>
+                        <tr>
+                            <th data-field="api_name" data-width="30%">接口名</th>
+                            <th data-field="system_alias" data-width="20%" data-align="center">应用</th>
+                            <th data-field="method" data-width="5%" data-align="center">方法</th>
+                            <th data-field="api_level" data-width="5%" data-align="center">接口级别</th>
+{#                            <th data-field="request_header" data-width="5%" data-align="center" data-formatter="showRequestHeader">请求头</th>#}
+{#                            <th data-field="updater" data-width="5%" data-align="center">修改人</th>#}
+                            <th data-field="update_time" data-width="15%" data-align="center">修改时间</th>
+                            <th data-field="action" data-width="15%" data-align="center" data-formatter="showAction">
+                                操作
+                            </th>
+                        </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade in" id="detailDlg" tabindex="1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content animated fadeIn">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">接口详情</h4>
+            </div>
+            <div class="modal-body">
+                <form id="editFrom" method="get" action="">
+                    <input type="hidden" id="id"/>
+                    <table class="table table-bordered table-condensed">
+                        <tr>
+                            <th width="20%">接口URL：</th>
+                            <td colspan="3">
+                                <input type="text" id="api_name" name="api_name" class="form-control"
+                                       placeholder="" required>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>接口说明：</th>
+                            <td colspan="3">
+                                <input type="text" id="api_desc" name="api_desc" class="form-control"
+                                       readonly="readonly" placeholder="">
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>级别：</th>
+                            <td width="30%">
+                                <select id="api_level" name="api_level" class="form-control" readonly="readonly" required>
+                                    <option value="P1">P1</option>
+                                    <option value="P2">P2</option>
+                                    <option value="P3">P3</option>
+                                    <option value="P4">P4</option>
+                                </select>
+                            </td>
+                            <th width="20%">方法：</th>
+                            <td width="30%">
+                                <select id="method" name="method" class="form-control" readonly="readonly" required>
+                                    <option value="get">GET</option>
+                                    <option value="post">POST</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>请求头：<br>(可选)</th>
+                            <td colspan="3"><textarea rows="6" id="request_header" class="form-control" style="resize: none;"
+                                                      placeholder="请输入JSON格式的消息头。"></textarea></td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" style="color: blue;"><strong>说明:</strong><br>级别： P1,P2 -- 查询相关接口, P3,P4 --
+                                涉及到数据修改的接口
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-white" data-dismiss="modal">关闭</button>
+                <button id="saveBtn" type="submit" class="btn btn-primary" onclick="save()">保存</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="/static/js/jquery.min.js?v=f9c7afd057?v=2.1.4"></script>
+<script src="/static/js/bootstrap.min.js?v=281cd50dd9?v=3.3.6"></script>
+<script src="/static/js/plugins/bootstrap-table/bootstrap-table.min.js?v=eeb5b97857"></script>
+<script src="/static/js/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js?v=c8f1530c22"></script>
+<script src="/static/js/plugins/validate/jquery.validate.min.js?v=346e6b069a"></script>
+<script src="/static/js/plugins/validate/messages_zh.js?v=6af228ebea"></script>
+<script src="/static/js/plugins/scrollUp/jquery.scrollUp.min.js?v=63bbf26c1f"></script>
+<script src="/static/module/jquery-ui-1.12.1/jquery-ui.min.js?v=c15b1008de"></script>
+<script src="/static/js/jquery.cookie.js?v=20a0023596"></script>
+<script type="text/javascript" src="/static/js/layer/layer.js?v=8962f047ee?version=20180525" charset="utf-8"></script>
+
+<script language="javascript" type="text/javascript">
+    var rowData = [];
+    var $api_table = $('#api_table');
+
+    $(function () {
+        // 回到顶部链接
+        $.scrollUp({
+            animation: 'fade',
+            scrollDistance: '0',
+            activeOverlay: '#00FFFF',
+            scrollImg: {
+                active: true,
+                type: 'background',
+                src: '/static/js/plugins/scrollUp/img/top.png'
+            }
+        });
+
+        /*
+        $.ajax({
+            type: 'get',
+            url: '/data/get_project_list',
+            success: function (result) {
+                for (var i in result) {
+                    var app_name = result[i];
+                    $("#projects").append("<option value='" + app_name + "'>" + app_name + "</option>");
+                }
+            }
+        });
+        */
+
+        setTimeout("init_table()", 500);
+    })
+
+    // 初始化表格
+    function init_table() {
+        $api_table.bootstrapTable({
+            url: '/testcase/apiDatagrid',
+            striped: true,
+            sortable: true,
+            sortName: 'update_time',
+            sortOrder: 'desc',
+            silentSort: false,
+            pagination: true,
+            pageSize: 10,
+            sidePagination: "server", //表示服务端请求
+            queryParamsType: "undefined",
+            queryParams: function queryParams(params) {   //设置查询参数
+                var param = {
+                    pageNumber: params.pageNumber,
+                    pageSize: params.pageSize,
+                    searchText: params.searchText,
+                    systemAlias: $('#projects').val(),
+                    apiLevel: $('#apiLevel').val(),
+                    apiName: $('#apiName').val(),
+                };
+                return param;
+            },
+        });
+    }
+
+    // 加载数据表格
+    function reloadDatagrid() {
+        var tableOptions = $api_table.bootstrapTable('getOptions');
+        $api_table.bootstrapTable('showLoading');
+        $.ajax({
+            type: 'post',
+            url: '/testcase/apiDatagrid/',
+            data: {
+                pageNumber: tableOptions.pageNumber,
+                pageSize: tableOptions.pageSize,
+                systemAlias: $('#projects').val(),
+                apiLevel: $('#apiLevel').val(),
+                apiName: $('#apiName').val(),
+            },
+            success: function (result) {
+                $api_table.bootstrapTable('load', result);
+                $api_table.bootstrapTable('hideLoading');
+            }
+        });
+    }
+
+    // 请求头
+    function showRequestHeader(value, row, index) {
+        rowData[index] = row;
+        var viewBtn = '<a title="查看消息头" onclick="if (row.request_header != \'\') {layer.msg(\'' + row.request_header + '\');} else {alert(\'请求头为空\')}"> 查看</i></a>'
+        return viewBtn;
+    }
+
+    // 格式化操作按钮
+    function showAction(value, row, index) {
+        rowData[index] = row;
+        var viewBtn = '<a title="详情" data-toggle="modal" data-target="#detailDlg" onclick="showDetail(' + index + ')"><i class="fa fa-table" aria-hidden="true"> 详情</i></a>'
+        var editBtn = '<a title="修改" data-toggle="modal" data-target="#detailDlg" onclick="editFun(' + index + ')"><i class="fa fa-pencil"> 编辑</i></a>'
+        var removeBtn = '<a title="删除" style="color: #ED5565;" onclick="remove(' + row.id + ')"><i class="fa fa-trash" aria-hidden="true"> 删除</i></a>';
+        return viewBtn + '&nbsp;' + editBtn + '&nbsp;' + removeBtn;
+    }
+
+    // 查看接口详情
+    function showDetail(index) {
+        $('#saveBtn').hide();
+        $('#detailDlg textarea').attr('readonly', 'readonly');
+        $('#api_desc').attr('readonly', 'readonly');
+        $('#api_level').attr('readonly', 'readonly');
+        $('#method').attr('readonly', 'readonly');
+        $('#detailDlg h4').html('接口详情');
+
+        var row = rowData[index];
+        $('#id').val(row.id);
+        $('#api_desc').val(row.api_desc);
+        $('#api_name').val(row.api_name);
+        $('#method').val(row.method);
+        $('#api_level').val(row.api_level);
+        try {
+             $('#request_header').val($.trim(formatJson(row.request_header)));
+        } catch (err) {
+            console.error('format json error! ' + row.request_header);
+            $('#request_header').val(row.request_header);
+        }
+    }
+
+    // 编辑测试用例
+    function editFun(index) {
+        showDetail(index);
+        $('#detailDlg h4').html('编辑接口');
+        $('#detailDlg textarea').removeAttr('readonly');
+        $('#api_desc').removeAttr('readonly');
+        $('#api_level').removeAttr('readonly');
+        $('#method').removeAttr('readonly');
+        $('#saveBtn').show();
+    }
+
+    // 保存按钮操作
+    function save() {
+        var form = $('#editFrom');
+        form.validate();
+        if (form.valid()) {
+            var params = {
+                "id": $('#id').val(),
+                "api_name": $('#api_name').val(),
+                "api_desc": $('#api_desc').val(),
+                "api_level": $('#api_level').val(),
+                "method": $('#method').val(),
+                "system_alias": $('#projects').val(),
+                "request_header": $('#request_header').val(),
+            };
+
+            $.ajax({
+                url: "/testcase/editApi/",
+                type: "post",
+                dataType: "json",
+                data: params,
+                async: true,
+                beforeSend: function (xhr, setting) {
+                },
+                success: function (result) {
+                    reloadDatagrid();
+
+                    if (result.code == 0) {
+                        $('#detailDlg').modal('hide');
+                        layer.msg('保存接口成功.');
+                    } else {
+                        layer.alert(result.message, {icon: 2});
+                    }
+                },
+                error: function () {
+                    layer.alert('发生异常，请重试.', {icon: 2});
+                }
+            });
+        }
+    }
+
+    // 删除接口
+    function remove(id) {
+        if (id) {
+            layer.confirm('确定要删除吗？', {icon: 0, title:'提示', btn: ['确定', '取消'] //按钮
+            }, function () {
+                var url = '/testcase/removeApi/';
+                var loading = layer.load();
+                $.ajax({
+                    type: 'post',
+                    url: url,
+                    data: {
+                        "apiId": id,
+                    },
+                    dataType: 'json',
+                    success: function (result) {
+                        if (result.code == 0) {
+                            layer.alert(result.message, {icon: 1});
+                        } else {
+                            layer.alert(result.message);
+                        }
+                        layer.close(loading);
+                        reloadDatagrid();
+                    }
+                });
+            }, function () {
+                layer.msg('用户取消了操作', {
+                    time: 3000
+                });
+            });
+
+        } else {
+            layer.msg('请选择一个接口!')
+        }
+    }
+
+    // 新增接口
+    function addFun() {
+        var system_alias = $('#projects').val();
+        if (system_alias != '') {
+            $('#detailDlg h4').html('新增接口');
+            $('#detailDlg textarea').removeAttr('readonly');
+            //$('#api_name').removeAttr('readonly');
+            $('#api_desc').removeAttr('readonly');
+            $('#api_level').removeAttr('readonly');
+            $('#method').removeAttr('readonly');
+            $('#detailDlg input').val('');
+            $('#api_name').val('/' + $('#projects').val() + '/');
+            $('#api_level').val('P1')
+            $('#method').val('post');
+            $('#saveBtn').show();
+        } else {
+            layer.msg('请选择一个应用!')
+        }
+    }
+</script>
+
+</body>
+</html>

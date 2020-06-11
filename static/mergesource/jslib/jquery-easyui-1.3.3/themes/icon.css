@@ -1,0 +1,183 @@
+.icon-blank{
+	background:url('icons/blank.gif') no-repeat center center;
+}
+.icon-add{
+	background:url('icons/edit_add.png') no-repeat center center;
+}
+.icon-edit{
+	background:url('icons/pencil.png') no-repeat center center;
+}
+.icon-remove{
+	background:url('icons/edit_remove.png') no-repeat center center;
+}
+.icon-save{
+	background:url('icons/filesave.png') no-repeat center center;
+}
+.icon-cut{
+	background:url('icons/cut.png') no-repeat center center;
+}
+.icon-ok{
+	background:url('icons/ok.png') no-repeat center center;
+}
+.icon-no{
+	background:url('icons/no.png') no-repeat center center;
+}
+.icon-cancel{
+	background:url('icons/cancel.png') no-repeat center center;
+}
+.icon-reload{
+	background:url('icons/reload.png') no-repeat center center;
+}
+.icon-search{
+	background:url('icons/search.png') no-repeat center center;
+}
+.icon-print{
+	background:url('icons/print.png') no-repeat center center;
+}
+.icon-help{
+	background:url('icons/help.png') no-repeat center center;
+}
+.icon-undo{
+	background:url('icons/undo.png') no-repeat center center;
+}
+.icon-redo{
+	background:url('icons/redo.png') no-repeat center center;
+}
+.icon-back{
+	background:url('icons/back.png') no-repeat center center;
+}
+.icon-sum{
+	background:url('icons/sum.png') no-repeat center center;
+}
+.icon-tip{
+	background:url('icons/tip.png') no-repeat center center;
+}
+
+.icon-mini-add{
+	background:url('icons/mini_add.png') no-repeat center center;
+}
+
+.icon-mini-remove{
+	background:url('icons-custom/mini_remove.png') no-repeat center center;
+}
+
+.icon-mini-edit{
+	background:url('icons/mini_edit.png') no-repeat center center;
+}
+.icon-mini-refresh{
+	background:url('icons/mini_refresh.png') no-repeat center center;
+}
+
+.icon-up{
+	background:url('icons/arrow_up.png') no-repeat center center;
+}
+
+.icon-down{
+	background:url('icons/arrow_down.png') no-repeat center center;
+}
+
+.icon-add-small{
+	background:url('icons/add.png') no-repeat center center;
+}
+
+.icon-accept{
+	background:url('icons/accept.png') no-repeat center center;
+}
+
+.icon-disk{
+	background:url('icons/disk.png') no-repeat center center;
+}
+
+.icon-disk-all{
+	background:url('icons/disk_multiple.png') no-repeat center center;
+}
+
+.icon-database-add{
+	background:url('icons/database_add.png') no-repeat center center;
+}
+
+.icon-computer1{
+	background:url('icons/computer1.png') no-repeat center center;
+}
+
+.icon-computer2{
+	background:url('icons/computer2.png') no-repeat center center;
+}
+
+.icon-home{
+	background:url('icons/home.png') no-repeat center center;
+}
+
+.icon-file{
+	background:url('icons/file.png') no-repeat center center;
+}
+
+.icon-folder{
+	background:url('icons/folder.png') no-repeat center center;
+}
+
+.icon-logout{
+	background:url('icons/logout.png') no-repeat center center;
+}
+
+.icon-config{
+	background:url('icons/config.png') no-repeat center center;
+}
+
+.icon-theme{
+	background:url('icons/appearance.png') no-repeat center center;
+}
+
+.icon-export{
+	background:url('icons/export.png') no-repeat center center;
+}
+
+.icon-svn-normal{
+	background:url('icons/svn_normal.png') no-repeat center center;
+}
+
+.icon-svn-added{
+	background:url('icons/svn_added.png') no-repeat center center;
+}
+
+.icon-svn-modify{
+	background:url('icons/svn_modify.png') no-repeat center center;
+}
+
+.icon-svn-deleted{
+	background:url('icons/svn_deleted.png') no-repeat center center;
+}
+
+.icon-svn-locked{
+	background:url('icons/svn_locked.png') no-repeat center center;
+}
+
+.icon-svn-conflict{
+	background:url('icons/svn_conflict.png') no-repeat center center;
+}
+
+.icon-svn-commit{
+	background:url('icons/svn_commit.png') no-repeat center center;
+}
+
+.icon-info{
+	background:url('icons/info.png') no-repeat center center;
+}
+
+.icon-brush{
+	background:url('icons/brush_icon.png') no-repeat center center;
+}
+
+.icon-hand{
+	background:url('icons/hand.png') no-repeat center center;
+}
+
+.icon-block{
+	background:url('icons/block.png') no-repeat center center;
+}
+.icon-kanban{
+	background:url('icons/kanban.png') no-repeat center center;
+}
+.icon-sprint{
+	background:url('icons/scrum.png') no-repeat center center;
+}

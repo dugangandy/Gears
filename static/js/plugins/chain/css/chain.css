@@ -1,0 +1,20 @@
+table{table-layout:fixed}
+.span{position: relative}
+.span_title{ word-wrap: break-word; }
+.span_tag{position:absolute;top: 10%;right:10%; padding: 5px;font-size:7px;margin-left: 5px;text-align: center;color: white;background-color: #0881A3;border-radius: 5px}
+td{position: relative}
+.time_progress{position: relative;background-color: green;height: 20px;padding-left: 2%;padding-right: 2%;color: white;
+    line-height:20px;font-size: 7px}
+.len_root{width: 100%;}
+.error{background-color: red}
+.warn{background-color: orange}
+.icon_error{color: red}
+.icon_warn{color: orange}
+.icon_ok{color: green}
+
+.info_tip_list{width: 220px;margin-left: auto;margin-right: auto;margin-top: 15px;}
+.info_tip{float: right;margin-left: 9px;text-align: center}
+
+.span_place{}
+.span_place:before{content: ' ';padding-left: 2% !important;display: inline-block}
+
